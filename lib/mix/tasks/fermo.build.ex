@@ -11,9 +11,7 @@ defmodule Mix.Tasks.Fermo.Build do
     project = Mix.Project.get()
     [main | _rest] = Module.split(project)
     module = String.to_existing_atom("Elixir.#{main}")
-    config = module.config()
-    config = Fermo.build(config)
-    IO.puts "config: #{inspect(config, [pretty: true, width: 0])}"
+    module.build()
     {:ok}
   end
 end
