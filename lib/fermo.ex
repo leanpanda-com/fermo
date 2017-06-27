@@ -17,6 +17,14 @@ defmodule Fermo do
         end)
         "<a href=\"#{href}\" #{Enum.join(attribs, " ")}>#{text}</a>"
       end
+
+      defp partials_path, do: "partials"
+
+      def partial(name, params = %{}) do
+        template = Path.join(partials_path(), "_#{name}.html.slim")
+        name = String.to_atom(template)
+        apply(__MODULE__, name, [params])
+      end
     end
   end
 
@@ -30,7 +38,7 @@ defmodule Fermo do
     end)
 
     config = Module.get_attribute(env.module, :config)
-    exclude = Map.get(config, :exclude, [])
+    exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
       single = String.replace(glob, "?", ".")
       multiple = String.replace(single, "*", ".*")
