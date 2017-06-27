@@ -37,20 +37,19 @@ defmodule Fermo do
       Regex.compile!(multiple)
     end)
 
-    pages = Enum.reduce(templates, [], fn (path, acc) ->
+    config = Enum.reduce(templates, config, fn (template, config) ->
       skip = Enum.any?(exclude_matchers, fn (exclude) ->
-        Regex.match?(exclude, path)
+        Regex.match?(exclude, template)
       end)
       if skip do
-        acc
+        config
       else
-        [path | acc]
+        target = String.replace(template, ".slim", "")
+        Fermo.add_page(config, template, target)
       end
     end)
 
-    config = Map.put(config, :pages, pages)
     Module.put_attribute(env.module, :config, config)
-    IO.puts "__before_compile__ @config: #{inspect(config, [pretty: true, width: 0])}"
 
     get_config = quote do
       def config() do
@@ -89,22 +88,20 @@ defmodule Fermo do
     end
   end
 
-  defmacro proxy(conf, template, target, params \\ %{}) do
+  defmacro proxy(config, template, target, params \\ %{}) do
     quote bind_quoted: binding() do
-      Fermo.build_page(__MODULE__, conf, template, target, params)
+      Fermo.add_page(config, template, target, params)
     end
   end
 
-  def build_page(module, conf, template, target, params \\ %{}) do
-    defaults_method = String.to_atom(template <> "-defaults")
-    defaults = apply(module, defaults_method, [])
-    args = Map.merge(defaults, params)
-    name = String.to_atom(template)
-    output = apply(module, name, [args])
-
-    resource = %{body: output, target: target}
-    resources = Map.get(conf, :resources, [])
-    put_in(conf, [:resources], resources ++ [resource])
+  def add_page(config, template, target, params \\ %{}) do
+    pages = Map.get(config, :pages, [])
+    page = %{
+      template: template,
+      target: target,
+      params: params
+    }
+    put_in(config, [:pages], pages ++ [page])
   end
 
   defmacro build(config \\ %{}) do
@@ -115,21 +112,31 @@ defmodule Fermo do
 
   def do_build(module, config) do
     pages = config[:pages]
-    config = Enum.reduce(pages, config, fn (page, config) ->
-      "localizable/" <> path  = page
-      path = String.replace(path, ".slim", "")
-      build_page(module, config, page, path, %{})
+    pages_with_body = Enum.map(pages, fn (%{template: template, params: params} = page) ->
+      body = build_page(module, template, params)
+      put_in(page, [:body], body)
     end)
+    config = put_in(config, [:pages], pages_with_body)
 
-    resources = config[:resources]
     File.mkdir(build_path())
-    Enum.each(resources, fn (%{body: body, target: target}) ->
+
+    pages = config[:pages]
+    Enum.each(pages, fn (%{body: body, target: target}) ->
       pathname = Path.join(build_path(), target)
       path = Path.dirname(pathname)
       File.mkdir(path)
       File.write!(pathname, body, [:write])
     end)
     config
+  end
+
+  def build_page(module, template, params \\ %{}) do
+    defaults_method = String.to_atom(template <> "-defaults")
+    defaults = apply(module, defaults_method, [])
+    args = Map.merge(defaults, params)
+    name = String.to_atom(template)
+    content = apply(module, name, [args])
+    apply(module, :"layouts/layout.html.slim", [%{content: content}])
   end
 
   def parse_template(path) do
@@ -140,5 +147,8 @@ defmodule Fermo do
     [_, frontmatter_yaml, body] = String.split(source, "---\n")
     frontmatter = YamlElixir.read_from_string(frontmatter_yaml)
     [Macro.escape(frontmatter, unquote: true), body]
+  end
+  def split_template({:ok, body}) do
+    [Macro.escape(%{}, unquote: true), body]
   end
 end
