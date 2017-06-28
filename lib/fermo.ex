@@ -37,7 +37,7 @@ defmodule Fermo do
 
       defp partials_path, do: "partials"
 
-      def partial(name, params = %{}) do
+      def partial(name, params \\ %{}) do
         template = Path.join(partials_path(), "_#{name}.html.slim")
         name = String.to_atom(template)
         apply(__MODULE__, name, [params])
