@@ -109,11 +109,24 @@ defmodule Fermo do
   def deftemplate(template) do
     [frontmatter, body] = parse_template(template)
     body = String.replace(body, ~r/^[\s\r\n]*/, "")
-    eex_source = Slime.Renderer.precompile(body)
+    compiled =
+      try do
+        eex_source = Slime.Renderer.precompile(body)
+        info = [file: template, line: 1]
+        EEx.compile_string(eex_source, info)
+      rescue
+        e ->
+          IO.puts "Failed to precompile template: '#{template}'"
+          IO.puts "\nbody:\n#{body}\n"
+          raise e
+      catch
+        e ->
+          IO.puts "Failed to precompile template: '#{template}'"
+          IO.puts "\nbody:\n#{body}\n"
+          raise e
+      end
     name = String.to_atom(template)
     quote bind_quoted: binding() do
-      info = [file: __ENV__.file, line: __ENV__.line]
-      compiled = EEx.compile_string(eex_source, info)
       escaped_frontmatter = Macro.escape(frontmatter)
       args = [Macro.var(:params, nil)]
 
