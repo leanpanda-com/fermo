@@ -95,6 +95,7 @@ defmodule Fermo do
 
   def deftemplate(template) do
     [frontmatter, body] = parse_template(template)
+    body = String.replace(body, ~r/^[\s\r\n]*/, "")
     eex_source = Slime.Renderer.precompile(body)
     name = String.to_atom(template)
     quote bind_quoted: binding() do
