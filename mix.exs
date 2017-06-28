@@ -20,7 +20,7 @@ defmodule Fermo.MixProject do
 
   defp deps do
     [
-      {:slime, "~> 0.16.0"},
+      {:slime, "~> 1.0.0"},
       {:yaml_elixir, "~> 1.3.0"}
     ]
   end
