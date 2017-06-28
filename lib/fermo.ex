@@ -15,11 +15,17 @@ defmodule Fermo do
       Module.register_attribute __MODULE__, :config, persist: true
       @config unquote(opts)
 
-      def link_to(text, href, attributes \\ []) do
+      def link_to(href, attributes, [do: content] = other) when is_list(attributes) and is_list(other) do
+        link_to(content, href, attributes)
+      end
+      def link_to(text, href, attributes) do
         attribs = Enum.map(attributes, fn ({k, v}) ->
           "#{k}=\"#{v}\""
         end)
         "<a href=\"#{href}\" #{Enum.join(attribs, " ")}>#{text}</a>"
+      end
+      def link_to(text, href) do
+        link_to(text, href, [])
       end
 
       defp partials_path, do: "partials"
