@@ -28,6 +28,13 @@ defmodule Fermo do
         link_to(text, href, [])
       end
 
+      def image_tag(filename, attributes \\ []) do
+        attribs = Enum.map(attributes, fn ({k, v}) ->
+          "#{k}=\"#{v}\""
+        end)
+        "<img src=\"images/#{filename}\" #{Enum.join(attribs, " ")}/>"
+      end
+
       defp partials_path, do: "partials"
 
       def partial(name, params = %{}) do
