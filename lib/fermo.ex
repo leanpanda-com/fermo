@@ -81,7 +81,7 @@ defmodule Fermo do
     end)
 
     config = Module.get_attribute(env.module, :config)
-    exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
+    exclude = Map.get(config, :exclude, []) ++ ["partials/*", "localizable/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
       single = String.replace(glob, "?", ".")
       multiple = String.replace(single, "*", ".*")
@@ -97,6 +97,25 @@ defmodule Fermo do
       else
         target = String.replace(template, ".slim", "")
         Fermo.add_page(config, template, target)
+      end
+    end)
+
+    locales = config[:i18n]
+    default_locale = hd(locales)
+    config = Enum.reduce(templates, config, fn (template, config) ->
+      if String.starts_with?(template, "localizable/") do
+        target = String.replace_prefix(template, "localizable/", "")
+        target = String.replace(target, ".slim", "")
+        Enum.reduce(locales, config, fn (locale, config) ->
+          localized_target = if locale == default_locale do
+              target
+            else
+              "#{locale}/#{target}"
+            end
+          Fermo.add_page(config, template, localized_target, %{locale: locale})
+        end)
+      else
+        config
       end
     end)
 
@@ -166,12 +185,13 @@ defmodule Fermo do
     end
   end
 
-  def add_page(config, template, target, params \\ %{}) do
+  def add_page(config, template, target, params \\ %{}, options \\ %{}) do
     pages = Map.get(config, :pages, [])
     page = %{
       template: template,
       target: target,
-      params: params
+      params: params,
+      options: options
     }
     put_in(config, [:pages], pages ++ [page])
   end
@@ -186,8 +206,14 @@ defmodule Fermo do
     {:ok} = Fermo.load_translations(config)
 
     pages = config[:pages]
-    pages_with_body = Enum.map(pages, fn (%{template: template, params: params} = page) ->
+    pages_with_body = Enum.map(pages, fn (%{template: template, params: params, options: options} = page) ->
+      previous_locale = I18n.get_locale()
+      locale = options[:locale]
+      if locale do
+        I18n.set_locale(locale)
+      end
       body = build_page(module, template, params)
+      I18n.set_locale(previous_locale)
       put_in(page, [:body], body)
     end)
     config = put_in(config, [:pages], pages_with_body)
