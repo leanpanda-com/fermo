@@ -35,6 +35,22 @@ defmodule Fermo do
         "<img src=\"images/#{filename}\" #{Enum.join(attribs, " ")}/>"
       end
 
+      def javascript_include_tag(name) do
+        "/javascripts/#{name}.js"
+      end
+
+      def truncate_words(text, options \\ []) do
+        length = options[:length] || 30
+        omission = options[:omission] || "..."
+        words = String.split(text)
+        if length(words) <= length do
+          text
+        else
+          incipit = Enum.slice(words, 0..length)
+          Enum.join(incipit, " ") <> omission
+        end
+      end
+
       defp partials_path, do: "partials"
 
       def partial(name, params \\ %{}) do
@@ -46,6 +62,8 @@ defmodule Fermo do
       def current_locale do
         I18n.get_locale!()
       end
+
+      def environment, do: "production" # TODO
 
       def t(key) do
         I18n.translate!(key)
