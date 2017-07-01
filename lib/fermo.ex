@@ -185,9 +185,9 @@ defmodule Fermo do
     end
   end
 
-  defmacro proxy(config, template, target, params \\ %{}) do
+  defmacro proxy(config, template, target, params \\ nil, options \\ nil) do
     quote bind_quoted: binding() do
-      Fermo.add_page(config, template, target, params)
+      Fermo.add_page(config, template, target, params, options)
     end
   end
 
