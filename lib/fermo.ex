@@ -51,6 +51,12 @@ defmodule Fermo do
         end
       end
 
+      def mail_to(email, caption \\ nil, _mail_options \\ %{}) do
+        # TODO handle _mail_options
+        mail_href = "mailto:#{email}"
+        link_to((caption || email), mail_href)
+      end
+
       defp partials_path, do: "partials"
 
       def partial(name, params \\ %{}) do
