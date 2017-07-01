@@ -213,7 +213,7 @@ defmodule Fermo do
 
     pages = config[:pages]
     pages_with_body = Enum.map(pages, fn (%{template: template, params: params, options: options} = page) ->
-      previous_locale = I18n.get_locale()
+      {:ok, previous_locale} = I18n.get_locale()
       locale = options[:locale]
       if locale do
         I18n.set_locale(locale)
