@@ -162,13 +162,13 @@ defmodule Fermo do
         rescue
           e ->
             IO.puts "Failed to precompile template: '#{template}'"
-          IO.puts "\nbody:\n#{body}\n"
-          raise e
+            IO.puts "\nbody:\n#{body}\n"
+            raise e
         catch
           e ->
             IO.puts "Failed to precompile template: '#{template}'"
-          IO.puts "\nbody:\n#{body}\n"
-          raise e
+            IO.puts "\nbody:\n#{body}\n"
+            raise e
         end
       escaped_frontmatter = Macro.escape(frontmatter)
       args = [Macro.var(:params, nil)]
