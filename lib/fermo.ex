@@ -57,12 +57,12 @@ defmodule Fermo do
         link_to((caption || email), mail_href)
       end
 
-      defp partials_path, do: "partials"
-
-      def partial(name, params \\ %{}) do
-        template = Path.join(partials_path(), "_#{name}.html.slim")
-        name = String.to_atom(template)
-        Fermo.build_content(__MODULE__, template, params)
+      defmacro partial(name, params \\ nil) do
+        template = "partials/_#{name}.html.slim"
+        quote do
+          page = var!(context)[:page]
+          Fermo.render_template(__MODULE__, unquote(template), page, unquote(params))
+        end
       end
 
       def current_locale do
@@ -73,6 +73,14 @@ defmodule Fermo do
 
       def t(key) do
         I18n.translate!(key)
+      end
+
+      defmacro yield_content(name) do
+        quote do
+          page = var!(context)[:page]
+          template = page[:template]
+          apply(__MODULE__, :content_for, [String.to_atom(template), unquote(name)])
+        end
       end
     end
   end
@@ -131,6 +139,11 @@ defmodule Fermo do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
       end
+
+      # No matching content_for found for a yield_content
+      def content_for(template, key) do
+        ""
+      end
     end
     defs ++ [get_config]
   end
@@ -150,10 +163,9 @@ defmodule Fermo do
   defp build_path, do: "build"
 
   def deftemplate(template) do
-    [frontmatter, body] = parse_template(template)
-    body = String.replace(body, ~r/^[\s\r\n]*/, "")
+    [frontmatter, body, content_fors] = parse_template(template)
     name = String.to_atom(template)
-    quote bind_quoted: binding() do
+    defs = quote bind_quoted: binding() do
       compiled =
         try do
           eex_source = Slime.Renderer.precompile(body)
@@ -171,7 +183,7 @@ defmodule Fermo do
             raise e
         end
       escaped_frontmatter = Macro.escape(frontmatter)
-      args = [Macro.var(:params, nil)]
+      args = [Macro.var(:params, nil), Macro.var(:context, nil)]
 
       # Define a method with the frontmatter, so we can merge with
       # params when the template is evaluated
@@ -183,6 +195,7 @@ defmodule Fermo do
         unquote(compiled)
       end
     end
+    [defs] ++ content_fors
   end
 
   defmacro proxy(config, template, target, params \\ nil, options \\ nil) do
@@ -212,14 +225,8 @@ defmodule Fermo do
     {:ok} = Fermo.load_translations(config)
 
     pages = config[:pages]
-    pages_with_body = Enum.map(pages, fn (%{template: template, params: params, options: options} = page) ->
-      {:ok, previous_locale} = I18n.get_locale()
-      locale = options[:locale]
-      if locale do
-        I18n.set_locale(locale)
-      end
-      body = build_full_page(module, template, params)
-      I18n.set_locale(previous_locale)
+    pages_with_body = Enum.map(pages, fn (page) ->
+      body = render_page(module, page)
       put_in(page, [:body], body)
     end)
     config = put_in(config, [:pages], pages_with_body)
@@ -236,35 +243,95 @@ defmodule Fermo do
     config
   end
 
-  def build_page(module, template, params) do
+  def render_template(module, template, page, params \\ %{}) do
     context = %{
       module: module,
-      template: template
+      template: template,
+      page: page
     }
     name = String.to_atom(template)
     apply(module, name, [params, context])
   end
 
-  def build_content(module, template, params \\ %{}) do
+  def render_body(module, %{template: template, params: params} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     args = Map.merge(defaults, params)
-    build_page(module, template, args)
+    render_template(module, template, page, args)
   end
 
-  def build_layout_with_content(module, content) do
+  def build_layout_with_content(module, content, page) do
     layout_template = "layouts/layout.html.slim"
     layout_params = %{content: content}
-    build_page(module, layout_template, layout_params)
+    render_template(module, layout_template, page, layout_params)
   end
 
-  def build_full_page(module, template, params \\ %{}) do
-    content = build_content(module, template, params)
-    build_layout_with_content(module, content)
+  def render_page(module, page) do
+    %{options: options} = page
+    {:ok, previous_locale} = I18n.get_locale()
+    locale = options[:locale]
+    if locale do
+      I18n.set_locale(locale)
+    end
+    content = render_body(module, page)
+    result = build_layout_with_content(module, content, page)
+    I18n.set_locale(previous_locale)
+    result
   end
 
-  def parse_template(path) do
-    File.read(full_template_path(path)) |> split_template
+  def extract_content_for_block(template, part) do
+    # Extract the content_for block (until the next line that isn't indented)
+    # TODO: the block should not stop at the first non-indented **empty** line,
+    #   it should continue to the first on-indented line with text
+    [key | [block | cleaned]] = Regex.run(~r/^(?:[\(\s]\:)([^\n\)]+)\)?\n((?:\s{2}[^\n]+\n)+)(.*)/s, part, capture: :all_but_first)
+    block = String.replace(block, ~r/^[\s\r\n]*/, "")
+    cf_def = quote bind_quoted: [block: block, template: template, key: key] do
+      compiled =
+        try do
+          eex_source = Slime.Renderer.precompile(block)
+          info = [file: template, line: 1]
+          EEx.compile_string(eex_source, info)
+        rescue
+          e ->
+            IO.puts "Failed to precompile content_for block in '#{template}'"
+            IO.puts "block: #{block}"
+            raise e
+        catch
+          e ->
+            IO.puts "Failed to precompile content_for block in '#{template}'"
+            IO.puts "block: #{block}"
+            raise e
+        end
+      name = String.to_atom(key)
+      args = [template, Macro.var(name, nil)] # TODO , Macro.var(:params, nil), Macro.var(:context, nil)]
+
+      # Define a method with the content_for block
+      def content_for(unquote_splicing(args)) do
+        unquote(compiled)
+      end
+    end
+    [cf_def, cleaned]
+  end
+
+  def extract_content_for_blocks(template, body) do
+    [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
+    {content_fors, cleaned_parts} = Enum.reduce(parts, {[], []}, fn (part, {cfs, ps}) ->
+      [new_cf, cleaned] = extract_content_for_block(template, part)
+      {cfs ++ [new_cf], ps ++ cleaned}
+    end)
+    [content_fors, Enum.join([head] ++ cleaned_parts, "\n")]
+  end
+
+  def parse_template(template) do
+    [frontmatter, body] = File.read(full_template_path(template))
+    |> split_template
+
+    [content_fors, body] = extract_content_for_blocks(template, body)
+
+    # Strip leading space, or EEx compilation fails
+    body = String.replace(body, ~r/^[\s\r\n]*/, "")
+
+    [frontmatter, body, content_fors]
   end
 
   defp split_template({:ok, source = "---\n" <> _rest}) do
