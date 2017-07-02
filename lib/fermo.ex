@@ -62,7 +62,7 @@ defmodule Fermo do
       def partial(name, params \\ %{}) do
         template = Path.join(partials_path(), "_#{name}.html.slim")
         name = String.to_atom(template)
-        apply(__MODULE__, name, [params])
+        Fermo.build_content(__MODULE__, template, params)
       end
 
       def current_locale do
@@ -218,7 +218,7 @@ defmodule Fermo do
       if locale do
         I18n.set_locale(locale)
       end
-      body = build_page(module, template, params)
+      body = build_full_page(module, template, params)
       I18n.set_locale(previous_locale)
       put_in(page, [:body], body)
     end)
@@ -236,13 +236,31 @@ defmodule Fermo do
     config
   end
 
-  def build_page(module, template, params \\ %{}) do
+  def build_page(module, template, params) do
+    context = %{
+      module: module,
+      template: template
+    }
+    name = String.to_atom(template)
+    apply(module, name, [params, context])
+  end
+
+  def build_content(module, template, params \\ %{}) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     args = Map.merge(defaults, params)
-    name = String.to_atom(template)
-    content = apply(module, name, [args])
-    apply(module, :"layouts/layout.html.slim", [%{content: content}])
+    build_page(module, template, args)
+  end
+
+  def build_layout_with_content(module, content) do
+    layout_template = "layouts/layout.html.slim"
+    layout_params = %{content: content}
+    build_page(module, layout_template, layout_params)
+  end
+
+  def build_full_page(module, template, params \\ %{}) do
+    content = build_content(module, template, params)
+    build_layout_with_content(module, content)
   end
 
   def parse_template(path) do
