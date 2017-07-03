@@ -28,11 +28,15 @@ defmodule Fermo do
         link_to(text, href, [])
       end
 
+      def image_path(filename) do
+        "/images/#{filename}"
+      end
+
       def image_tag(filename, attributes \\ []) do
         attribs = Enum.map(attributes, fn ({k, v}) ->
           "#{k}=\"#{v}\""
         end)
-        "<img src=\"images/#{filename}\" #{Enum.join(attribs, " ")}/>"
+        "<img src=\"#{image_path(filename)}\" #{Enum.join(attribs, " ")}/>"
       end
 
       def javascript_include_tag(name) do
