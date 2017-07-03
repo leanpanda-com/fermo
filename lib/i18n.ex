@@ -36,6 +36,10 @@ defmodule I18n do
     translation
   end
 
+  def t(key) do
+    translate!(key)
+  end
+
   def handle_call({:put, state}, _from, _state) do
     {:reply, {:ok}, state}
   end
