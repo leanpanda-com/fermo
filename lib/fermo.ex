@@ -289,6 +289,8 @@ defmodule Fermo do
     #   it should continue to the first on-indented line with text
     [key | [block | cleaned]] = Regex.run(~r/^(?:[\(\s]\:)([^\n\)]+)\)?\n((?:\s{2}[^\n]+\n)+)(.*)/s, part, capture: :all_but_first)
     block = String.replace(block, ~r/^[\s\r\n]*/, "")
+    # Strip indentation
+    block = String.replace(block, ~r/^  /m, "")
     cf_def = quote bind_quoted: [block: block, template: template, key: key] do
       compiled =
         try do
