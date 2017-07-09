@@ -133,7 +133,7 @@ defmodule Fermo do
             else
               "#{locale}/#{target}"
             end
-          Fermo.add_page(config, template, localized_target, %{locale: locale})
+          Fermo.add_page(config, template, localized_target, %{}, %{locale: locale})
         end)
       else
         config
