@@ -241,7 +241,7 @@ defmodule Fermo do
     Enum.each(pages, fn (%{body: body, target: target}) ->
       pathname = Path.join(build_path(), target)
       path = Path.dirname(pathname)
-      File.mkdir(path)
+      File.mkdir_p(path)
       File.write!(pathname, body, [:write])
     end)
     config
