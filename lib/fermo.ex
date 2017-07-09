@@ -148,7 +148,7 @@ defmodule Fermo do
       end
 
       # No matching content_for found for a yield_content
-      def content_for(template, key) do
+      def content_for(_template, _key, _params) do
         ""
       end
     end
