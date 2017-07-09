@@ -80,10 +80,13 @@ defmodule Fermo do
       end
 
       defmacro yield_content(name) do
+        name_atom = if is_atom(name), do: name, else: String.to_atom(name)
         quote do
           page = var!(context)[:page]
-          template = page[:template]
-          apply(__MODULE__, :content_for, [String.to_atom(template), unquote(name)])
+          params = page.params
+          template = page.template
+          template_atom = if is_atom(template), do: template, else: String.to_atom(template)
+          apply(__MODULE__, :content_for, [template_atom, unquote(name_atom), params])
         end
       end
     end
@@ -308,8 +311,9 @@ defmodule Fermo do
             IO.puts "block: #{block}"
             raise e
         end
+      template_atom = String.to_atom(template)
       name = String.to_atom(key)
-      args = [template, Macro.var(name, nil)] # TODO , Macro.var(:params, nil), Macro.var(:context, nil)]
+      args = [template_atom, name, Macro.var(:params, nil)]
 
       # Define a method with the content_for block
       def content_for(unquote_splicing(args)) do
