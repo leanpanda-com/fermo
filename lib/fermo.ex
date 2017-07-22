@@ -82,11 +82,12 @@ defmodule Fermo do
       defmacro yield_content(name) do
         name_atom = if is_atom(name), do: name, else: String.to_atom(name)
         quote do
-          page = var!(context)[:page]
+          context = var!(context)
+          page = context[:page]
           params = page.params
           template = page.template
           template_atom = if is_atom(template), do: template, else: String.to_atom(template)
-          apply(__MODULE__, :content_for, [template_atom, unquote(name_atom), params])
+          apply(__MODULE__, :content_for, [template_atom, unquote(name_atom), params, context])
         end
       end
     end
@@ -148,7 +149,7 @@ defmodule Fermo do
       end
 
       # No matching content_for found for a yield_content
-      def content_for(_template, _key, _params) do
+      def content_for(_template, _key, _params, _context) do
         ""
       end
     end
@@ -314,7 +315,7 @@ defmodule Fermo do
         end
       template_atom = String.to_atom(template)
       name = String.to_atom(key)
-      args = [template_atom, name, Macro.var(:params, nil)]
+      args = [template_atom, name, Macro.var(:params, nil), Macro.var(:context, nil)]
 
       # Define a method with the content_for block
       def content_for(unquote_splicing(args)) do
