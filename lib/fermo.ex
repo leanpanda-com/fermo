@@ -200,6 +200,8 @@ defmodule Fermo do
       end
 
       def unquote(name)(unquote_splicing(args)) do
+        _params = var!(params)
+        _context = var!(context)
         unquote(compiled)
       end
     end
@@ -319,6 +321,8 @@ defmodule Fermo do
 
       # Define a method with the content_for block
       def content_for(unquote_splicing(args)) do
+        _params = var!(params)
+        _context = var!(context)
         unquote(compiled)
       end
     end
