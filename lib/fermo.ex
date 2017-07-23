@@ -39,8 +39,20 @@ defmodule Fermo do
         "<img src=\"#{image_path(filename)}\" #{Enum.join(attribs, " ")}/>"
       end
 
-      def javascript_include_tag(name) do
+      def javascript_path(name) do
         "/javascripts/#{name}.js"
+      end
+
+      def javascript_include_tag(name) do
+        "<script src=\"#{javascript_path(name)}\" type=\"text/javascript\"></script>"
+      end
+
+      def stylesheet_path(name) do
+        "/stylesheets/#{name}.css"
+      end
+
+      def stylesheet_link_tag(name) do
+        "<link href=\"#{stylesheet_path(name)}\" media=\"all\" rel=\"stylesheet\" />"
       end
 
       def truncate_words(text, options \\ []) do
