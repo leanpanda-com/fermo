@@ -105,6 +105,20 @@ defmodule Fermo do
     end
   end
 
+  defp template_to_target(template, opts \\ [])
+  defp template_to_target(template, as_index_html: true) do
+    target = String.replace(template, ".slim", "")
+    if target == "index.html" ||
+      String.ends_with?(target, "/index.html") do
+      target
+    else
+      String.replace(target, ".html", "/index.html")
+    end
+  end
+  defp template_to_target(template, _opts) do
+    String.replace(template, ".slim", "")
+  end
+
   @doc false
   defmacro __before_compile__(env) do
     templates = File.cd!("priv/source", fn ->
@@ -122,6 +136,10 @@ defmodule Fermo do
       Regex.compile!(multiple)
     end)
 
+    locales = config[:i18n]
+    default_locale = hd(locales)
+
+    # Simple pages
     config = Enum.reduce(templates, config, fn (template, config) ->
       skip = Enum.any?(exclude_matchers, fn (exclude) ->
         Regex.match?(exclude, template)
@@ -129,17 +147,16 @@ defmodule Fermo do
       if skip do
         config
       else
-        target = String.replace(template, ".slim", "")
-        Fermo.add_page(config, template, target)
+        target = template_to_target(template)
+        Fermo.add_page(config, template, target, %{}, %{locale: default_locale})
       end
     end)
 
-    locales = config[:i18n]
-    default_locale = hd(locales)
+    # Localized pages
     config = Enum.reduce(templates, config, fn (template, config) ->
       if String.starts_with?(template, "localizable/") do
         target = String.replace_prefix(template, "localizable/", "")
-        target = String.replace(target, ".slim", "")
+        target = template_to_target(target, as_index_html: true)
         Enum.reduce(locales, config, fn (locale, config) ->
           localized_target = if locale == default_locale do
               target
