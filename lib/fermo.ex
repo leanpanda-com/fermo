@@ -72,7 +72,6 @@ defmodule Fermo do
       Fermo.deftemplate(path)
     end)
 
-
     Module.put_attribute(env.module, :config, config)
 
     get_config = quote do
@@ -86,17 +85,6 @@ defmodule Fermo do
       end
     end
     defs ++ [get_config]
-  end
-
-  def load_translations(config) do
-    default_locale = hd(config[:i18n])
-    files = Path.wildcard("priv/locales/**/*.yml")
-    translations = Enum.reduce(files, %{}, fn (file, translations) ->
-      content = YamlElixir.read_from_file(file)
-      atom_keys = AtomMap.atom_map(content)
-      Map.merge(translations, atom_keys)
-    end)
-    I18n.put(translations, default_locale)
   end
 
   defp source_path, do: "priv/source"
@@ -164,7 +152,7 @@ defmodule Fermo do
   end
 
   def do_build(module, config) do
-    {:ok} = Fermo.load_translations(config)
+    Fermo.Helpers.I18n.load!(config)
 
     pages = config[:pages]
     pages_with_body = Enum.map(pages, fn (page) ->

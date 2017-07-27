@@ -13,4 +13,15 @@ defmodule Fermo.Helpers.I18n do
       end
     end
   end
+
+  def load!(config) do
+    default_locale = hd(config[:i18n])
+    files = Path.wildcard("priv/locales/**/*.yml")
+    translations = Enum.reduce(files, %{}, fn (file, translations) ->
+      content = YamlElixir.read_from_file(file)
+      atom_keys = AtomMap.atom_map(content)
+      Map.merge(translations, atom_keys)
+    end)
+    {:ok} = I18n.put(translations, default_locale)
+  end
 end
