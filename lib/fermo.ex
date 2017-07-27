@@ -63,6 +63,7 @@ defmodule Fermo do
     config = Module.get_attribute(env.module, :config)
 
     config = Fermo.Localizable.add(config)
+    config = Fermo.Simple.add(config)
 
     templates = File.cd!("priv/source", fn ->
       Path.wildcard("**/*.slim")
@@ -71,28 +72,6 @@ defmodule Fermo do
       Fermo.deftemplate(path)
     end)
 
-    exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
-    exclude_matchers = Enum.map(exclude, fn (glob) ->
-      single = String.replace(glob, "?", ".")
-      multiple = String.replace(single, "*", ".*")
-      Regex.compile!(multiple)
-    end)
-
-    locales = config[:i18n]
-    default_locale = hd(locales)
-
-    # Simple pages
-    config = Enum.reduce(templates, config, fn (template, config) ->
-      skip = Enum.any?(exclude_matchers, fn (exclude) ->
-        Regex.match?(exclude, template)
-      end)
-      if skip do
-        config
-      else
-        target = Fermo.template_to_target(template)
-        Fermo.add_page(config, template, target, %{}, %{locale: default_locale})
-      end
-    end)
 
     Module.put_attribute(env.module, :config, config)
 
