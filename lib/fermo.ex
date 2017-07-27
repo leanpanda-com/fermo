@@ -44,8 +44,8 @@ defmodule Fermo do
     end
   end
 
-  defp template_to_target(template, opts \\ [])
-  defp template_to_target(template, as_index_html: true) do
+  def template_to_target(template, opts \\ [])
+  def template_to_target(template, as_index_html: true) do
     target = String.replace(template, ".slim", "")
     if target == "index.html" ||
       String.ends_with?(target, "/index.html") do
@@ -54,12 +54,16 @@ defmodule Fermo do
       String.replace(target, ".html", "/index.html")
     end
   end
-  defp template_to_target(template, _opts) do
+  def template_to_target(template, _opts) do
     String.replace(template, ".slim", "")
   end
 
   @doc false
   defmacro __before_compile__(env) do
+    config = Module.get_attribute(env.module, :config)
+
+    config = Fermo.Localizable.add(config)
+
     templates = File.cd!("priv/source", fn ->
       Path.wildcard("**/*.slim")
     end)
@@ -67,8 +71,7 @@ defmodule Fermo do
       Fermo.deftemplate(path)
     end)
 
-    config = Module.get_attribute(env.module, :config)
-    exclude = Map.get(config, :exclude, []) ++ ["partials/*", "localizable/*"]
+    exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
       single = String.replace(glob, "?", ".")
       multiple = String.replace(single, "*", ".*")
@@ -86,26 +89,8 @@ defmodule Fermo do
       if skip do
         config
       else
-        target = template_to_target(template)
+        target = Fermo.template_to_target(template)
         Fermo.add_page(config, template, target, %{}, %{locale: default_locale})
-      end
-    end)
-
-    # Localized pages
-    config = Enum.reduce(templates, config, fn (template, config) ->
-      if String.starts_with?(template, "localizable/") do
-        target = String.replace_prefix(template, "localizable/", "")
-        target = template_to_target(target, as_index_html: true)
-        Enum.reduce(locales, config, fn (locale, config) ->
-          localized_target = if locale == default_locale do
-              target
-            else
-              "#{locale}/#{target}"
-            end
-          Fermo.add_page(config, template, localized_target, %{}, %{locale: locale})
-        end)
-      else
-        config
       end
     end)
 
