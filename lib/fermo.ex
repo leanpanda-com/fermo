@@ -15,63 +15,10 @@ defmodule Fermo do
       Module.register_attribute __MODULE__, :config, persist: true
       @config unquote(opts)
 
-      def link_to(href, attributes, [do: content] = other) when is_list(attributes) and is_list(other) do
-        link_to(content, href, attributes)
-      end
-      def link_to(text, href, attributes) do
-        attribs = Enum.map(attributes, fn ({k, v}) ->
-          "#{k}=\"#{v}\""
-        end)
-        "<a href=\"#{href}\" #{Enum.join(attribs, " ")}>#{text}</a>"
-      end
-      def link_to(text, href) do
-        link_to(text, href, [])
-      end
-
-      def image_path(filename) do
-        "/images/#{filename}"
-      end
-
-      def image_tag(filename, attributes \\ []) do
-        attribs = Enum.map(attributes, fn ({k, v}) ->
-          "#{k}=\"#{v}\""
-        end)
-        "<img src=\"#{image_path(filename)}\" #{Enum.join(attribs, " ")}/>"
-      end
-
-      def javascript_path(name) do
-        "/javascripts/#{name}.js"
-      end
-
-      def javascript_include_tag(name) do
-        "<script src=\"#{javascript_path(name)}\" type=\"text/javascript\"></script>"
-      end
-
-      def stylesheet_path(name) do
-        "/stylesheets/#{name}.css"
-      end
-
-      def stylesheet_link_tag(name) do
-        "<link href=\"#{stylesheet_path(name)}\" media=\"all\" rel=\"stylesheet\" />"
-      end
-
-      def truncate_words(text, options \\ []) do
-        length = options[:length] || 30
-        omission = options[:omission] || "..."
-        words = String.split(text)
-        if length(words) <= length do
-          text
-        else
-          incipit = Enum.slice(words, 0..length)
-          Enum.join(incipit, " ") <> omission
-        end
-      end
-
-      def mail_to(email, caption \\ nil, _mail_options \\ %{}) do
-        # TODO handle _mail_options
-        mail_href = "mailto:#{email}"
-        link_to((caption || email), mail_href)
-      end
+      use Fermo.Helpers.Assets
+      use Fermo.Helpers.Links
+      use Fermo.Helpers.I18n
+      use Fermo.Helpers.Text
 
       defmacro partial(name, params \\ nil) do
         template = "partials/_#{name}.html.slim"
@@ -81,15 +28,7 @@ defmodule Fermo do
         end
       end
 
-      def current_locale do
-        I18n.get_locale!()
-      end
-
       def environment, do: "production" # TODO
-
-      def t(key) do
-        I18n.translate!(key)
-      end
 
       defmacro yield_content(name) do
         name_atom = if is_atom(name), do: name, else: String.to_atom(name)
