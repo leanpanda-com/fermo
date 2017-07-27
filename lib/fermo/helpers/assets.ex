@@ -1,6 +1,6 @@
 defmodule Fermo.Helpers.Assets do
   @doc false
-  defmacro __using__(opts \\ %{}) do
+  defmacro __using__(_opts \\ %{}) do
     quote do
       require Fermo.Helpers.Assets
 
