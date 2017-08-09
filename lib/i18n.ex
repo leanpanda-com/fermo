@@ -18,7 +18,7 @@ defmodule I18n do
   end
 
   def get_locale do
-    {:ok, locale} = GenServer.call(:i18n, {:get_locale})
+    GenServer.call(:i18n, {:get_locale})
   end
   def get_locale! do
     {:ok, locale} = get_locale()
@@ -29,7 +29,7 @@ defmodule I18n do
     translate(to_string(key))
   end
   def translate(key) do
-    {:ok, translation} = GenServer.call(:i18n, {:translate, key})
+    GenServer.call(:i18n, {:translate, key})
   end
   def translate!(key) do
     {:ok, translation} = translate(key)
