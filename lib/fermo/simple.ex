@@ -1,4 +1,11 @@
 defmodule Fermo.Simple do
+  @moduledoc """
+  Transform non-localized files.
+
+  This module is the simplest case of tranformation:
+  it locates all SLIM files not handled by other modules
+  and adds them to the transformation queue.
+  """
   def add(config) do
     exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
