@@ -4,6 +4,7 @@ defmodule Fermo do
 
   def start(_start_type, _args \\ []) do
     I18n.start_link()
+    Fermo.Assets.start_link()
   end
 
   @doc false
