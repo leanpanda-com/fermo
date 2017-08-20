@@ -48,8 +48,7 @@ defmodule Fermo do
   def template_to_target(template, opts \\ [])
   def template_to_target(template, as_index_html: true) do
     target = String.replace(template, ".slim", "")
-    if target == "index.html" ||
-      String.ends_with?(target, "/index.html") do
+    if target == "index.html" || String.ends_with?(target, "/index.html") do
       target
     else
       String.replace(target, ".html", "/index.html")
