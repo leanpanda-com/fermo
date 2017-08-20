@@ -193,7 +193,7 @@ defmodule Fermo do
   end
 
   def build_layout_with_content(module, content, page) do
-    layout_template = "layouts/layout.html.slim"
+    layout_template = "layouts/layout.html.slim" # TODO: make this a setting
     layout_params = %{content: content}
     render_template(module, layout_template, page, layout_params)
   end
