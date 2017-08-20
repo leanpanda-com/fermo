@@ -132,14 +132,18 @@ defmodule Fermo do
     Fermo.add_page(config, template, target, params, options)
   end
 
-  def add_page(config, template, target, params \\ %{}, options \\ %{}) do
-    pages = Map.get(config, :pages, [])
-    page = %{
+  def page_from(template, target, params \\ %{}, options \\ %{}) do
+    %{
       template: template,
       target: target,
       params: params,
       options: options
     }
+  end
+
+  def add_page(config, template, target, params \\ %{}, options \\ %{}) do
+    pages = Map.get(config, :pages, [])
+    page = page_from(template, target, params, options)
     put_in(config, [:pages], pages ++ [page])
   end
 
