@@ -8,6 +8,9 @@ defmodule Fermo.Helpers.Assets do
         Fermo.Assets.path!("fonts/#{filename}")
       end
 
+      def image_path("https://" <> path = url) do
+        url
+      end
       def image_path(filename) do
         Fermo.Assets.path!("images/#{filename}")
       end
