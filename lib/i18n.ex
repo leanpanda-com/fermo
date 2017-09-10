@@ -20,6 +20,7 @@ defmodule I18n do
   def get_locale do
     GenServer.call(:i18n, {:get_locale})
   end
+
   def get_locale! do
     {:ok, locale} = get_locale()
     locale
