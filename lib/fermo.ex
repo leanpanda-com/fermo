@@ -227,7 +227,7 @@ defmodule Fermo do
   def extract_content_for_block(template, part) do
     # Extract the content_for block (until the next line that isn't indented)
     # TODO: the block should not stop at the first non-indented **empty** line,
-    #   it should continue to the first on-indented line with text
+    #   it should continue to the first non-indented line with text
     [key | [block | cleaned]] = Regex.run(~r/^(?:[\(\s]\:)([^\n\)]+)\)?\n((?:\s{2}[^\n]+\n)+)(.*)/s, part, capture: :all_but_first)
     # Strip leading blank lines
     block = String.replace(block, ~r/^[\s\r\n]*/, "", global: false)
