@@ -189,28 +189,37 @@ defmodule Fermo do
     apply(module, name, [params, context])
   end
 
-  def render_body(module, %{template: template, params: params} = page) do
-    defaults_method = String.to_atom(template <> "-defaults")
-    defaults = apply(module, defaults_method, [])
+  def render_body(module, %{template: template, params: params} = page, defaults) do
     args = Map.merge(defaults, params)
     render_template(module, template, page, args)
   end
 
-  def build_layout_with_content(module, content, page) do
-    layout_template = "layouts/layout.html.slim" # TODO: make this a setting
+  def build_layout_with_content(module, content, page, layout) do
+    layout_template = "layouts/" <> layout
     layout_params = %{content: content}
     render_template(module, layout_template, page, layout_params)
   end
 
-  def render_page(module, page) do
+  def render_page(module, %{template: template} = page) do
     %{options: options} = page
     {:ok, previous_locale} = I18n.get_locale()
     locale = options[:locale]
     if locale do
       I18n.set_locale(locale)
     end
-    content = render_body(module, page)
-    result = build_layout_with_content(module, content, page)
+    defaults_method = String.to_atom(template <> "-defaults")
+    defaults = apply(module, defaults_method, [])
+    layout = if Map.has_key?(defaults, "layout") do
+      defaults["layout"]
+    else
+      "layout.html.slim" # TODO: make this a setting
+    end
+    content = render_body(module, page, defaults)
+    result = if layout do
+      build_layout_with_content(module, content, page, layout)
+    else
+      content
+    end
     I18n.set_locale(previous_locale)
     result
   end
