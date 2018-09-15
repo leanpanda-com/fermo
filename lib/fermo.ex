@@ -160,24 +160,43 @@ defmodule Fermo do
   def do_build(module, config) do
     Fermo.Helpers.I18n.load!(config)
 
-    pages = config[:pages]
-    pages_with_body = Enum.map(pages, fn (page) ->
-      body = render_page(module, page)
-      put_in(page, [:body], body)
-    end)
-    config = put_in(config, [:pages], pages_with_body)
-
     File.mkdir(build_path())
     copy_statics(config)
 
-    pages = config[:pages]
-    Enum.each(pages, fn (%{body: body, target: target}) ->
-      pathname = Path.join(build_path(), target)
-      path = Path.dirname(pathname)
-      File.mkdir_p(path)
-      File.write!(pathname, body, [:write])
-    end)
-    config
+    built_pages = Enum.map(
+      config.pages,
+      &Task.async(fn -> render_page(module, &1) end)
+    ) |> Enum.map(&Task.await(&1, 30000))
+
+    put_in(config, [:stats, :pages_built], Time.utc_now)
+    |> put_in([:pages], built_pages)
+  end
+
+  def render_page(module, %{template: template, target: target} = page) do
+    defaults_method = String.to_atom(template <> "-defaults")
+    defaults = apply(module, defaults_method, [])
+    layout = if Map.has_key?(defaults, "layout") do
+      defaults["layout"]
+    else
+      "layout.html.slim" # TODO: make this a setting
+    end
+    content = render_body(module, page, defaults)
+    body = if layout do
+      build_layout_with_content(module, content, page, layout)
+    else
+      content
+    end
+
+    save_file(target, body)
+
+    put_in(page, [:body], body)
+  end
+
+  defp save_file(target, body) do
+    pathname = Path.join(build_path(), target)
+    path = Path.dirname(pathname)
+    File.mkdir_p(path)
+    File.write!(pathname, body, [:write])
   end
 
   def render_template(module, template, page, params \\ %{}) do
@@ -199,30 +218,6 @@ defmodule Fermo do
     layout_template = "layouts/" <> layout
     layout_params = %{content: content}
     render_template(module, layout_template, page, layout_params)
-  end
-
-  def render_page(module, %{template: template} = page) do
-    %{options: options} = page
-    {:ok, previous_locale} = I18n.get_locale()
-    locale = options[:locale]
-    if locale do
-      I18n.set_locale(locale)
-    end
-    defaults_method = String.to_atom(template <> "-defaults")
-    defaults = apply(module, defaults_method, [])
-    layout = if Map.has_key?(defaults, "layout") do
-      defaults["layout"]
-    else
-      "layout.html.slim" # TODO: make this a setting
-    end
-    content = render_body(module, page, defaults)
-    result = if layout do
-      build_layout_with_content(module, content, page, layout)
-    else
-      content
-    end
-    I18n.set_locale(previous_locale)
-    result
   end
 
   def extract_content_for_block(template, part) do
