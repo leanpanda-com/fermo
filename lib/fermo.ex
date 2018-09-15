@@ -78,11 +78,6 @@ defmodule Fermo do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
       end
-
-      # No matching content_for found for a yield_content
-      def content_for(_template, _key, _params, _context) do
-        ""
-      end
     end
     defs ++ [get_config]
   end
@@ -270,7 +265,17 @@ defmodule Fermo do
       [new_cf, cleaned] = extract_content_for_block(template, part)
       {cfs ++ [new_cf], ps ++ cleaned}
     end)
-    [content_fors, Enum.join([head] ++ cleaned_parts, "\n")]
+
+    content_for_catchall = quote bind_quoted: [template: template] do
+      # When no matching `content_for` is found for a yield_content, return ""
+      template_atom = String.to_atom(template)
+      # args = [template_atom, Macro.var(:_key, nil), Macro.var(:_params, nil), Macro.var(:_context, nil)]
+      args = [template_atom, :head, Macro.var(:_params, nil), Macro.var(:_context, nil)]
+      def content_for(unquote_splicing(args)) do
+        ""
+      end
+    end
+    [content_fors ++ [content_for_catchall], Enum.join([head] ++ cleaned_parts, "\n")]
   end
 
   def parse_template(template) do
