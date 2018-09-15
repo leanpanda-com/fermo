@@ -93,10 +93,10 @@ defmodule Fermo do
   def deftemplate(template) do
     [frontmatter, body, content_fors] = parse_template(template)
     name = String.to_atom(template)
+    eex_source = Slime.Renderer.precompile(body)
     defs = quote bind_quoted: binding() do
       compiled =
         try do
-          eex_source = Slime.Renderer.precompile(body)
           info = [file: template, line: 1]
           EEx.compile_string(eex_source, info)
         rescue
@@ -234,9 +234,9 @@ defmodule Fermo do
     # Strip indentation
     block = String.replace(block, ~r/^  /m, "")
     cf_def = quote bind_quoted: [block: block, template: template, key: key] do
+      eex_source = Slime.Renderer.precompile(block)
       compiled =
         try do
-          eex_source = Slime.Renderer.precompile(block)
           info = [file: template, line: 1]
           EEx.compile_string(eex_source, info)
         rescue
