@@ -1,6 +1,10 @@
 defmodule I18n do
   use GenServer
 
+  def init(args) do
+    {:ok, args}
+  end
+
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: :i18n)
   end

@@ -8,6 +8,10 @@ defmodule Fermo.Assets do
   in order to provide asset name mapping.
   """
 
+  def init(args) do
+    {:ok, args}
+  end
+
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: :assets)
   end
