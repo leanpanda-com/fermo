@@ -30,6 +30,9 @@ defmodule Fermo.Helpers.Assets do
         "<img src=\"#{image_path(filename)}\" #{Enum.join(attribs, " ")}/>"
       end
 
+      def javascript_include_tag("https://" <> path = url) do
+        "<script src=\"#{url}\" type=\"text/javascript\"></script>"
+      end
       def javascript_include_tag(name) do
         "<script src=\"#{javascript_path(name)}\" type=\"text/javascript\"></script>"
       end
