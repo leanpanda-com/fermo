@@ -146,6 +146,11 @@ defmodule Fermo do
     put_in(config, [:pages], pages ++ [page])
   end
 
+  def add_static(config, source, target) do
+    statics = Map.get(config, :statics, [])
+    put_in(config, [:statics], statics ++ [%{source: source, target: target}])
+  end
+
   defmacro build(config \\ %{}) do
     quote bind_quoted: binding() do
       Fermo.do_build(__MODULE__, config)
@@ -163,6 +168,7 @@ defmodule Fermo do
     config = put_in(config, [:pages], pages_with_body)
 
     File.mkdir(build_path())
+    copy_statics(config)
 
     pages = config[:pages]
     Enum.each(pages, fn (%{body: body, target: target}) ->
@@ -276,6 +282,15 @@ defmodule Fermo do
       end
     end
     [content_fors ++ [content_for_catchall], Enum.join([head] ++ cleaned_parts, "\n")]
+  end
+
+  defp copy_statics(config) do
+    statics = config[:statics]
+    Enum.each(statics, fn (%{source: source, target: target}) ->
+      source_pathname = Path.join(source_path(), source)
+      target_pathname = Path.join(build_path(), target)
+      File.cp_r(source_pathname, target_pathname)
+    end)
   end
 
   def parse_template(template) do
