@@ -11,7 +11,16 @@ defmodule Mix.Tasks.Fermo.Build do
     project = Mix.Project.get()
     [main | _rest] = Module.split(project)
     module = String.to_existing_atom("Elixir.#{main}")
-    module.build()
+    config = module.build()
+    stats = config.stats
+    log("Data load", stats, :start, :data_loaded)
+    log("Page preparation", stats, :prepare_pages, :pages_prepared)
+    log("Build", stats, :pages_prepared, :pages_built)
     {:ok}
+  end
+
+  defp log(message, stats, from, to) do
+    diff = Time.diff(stats[to], stats[from], :microsecond)
+    IO.puts "#{message}: #{diff / 1000000}s"
   end
 end

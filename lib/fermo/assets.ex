@@ -16,17 +16,18 @@ defmodule Fermo.Assets do
     GenServer.start_link(__MODULE__, [], name: :assets)
   end
 
-  def build() do
-    System.cmd("yarn", ["run", "webpack"]) |> handle_build_result
+  def build(config) do
+    System.cmd("yarn", ["run", "webpack"]) |> handle_build_result(config)
   end
 
-  defp handle_build_result({_output, 0}) do
+  defp handle_build_result({_output, 0}, config) do
     manifest = "build/manifest.json"
     |> File.read!
     |> JSX.decode!
     GenServer.call(:assets, {:put, manifest})
+    put_in(config, [:stats, :assets_build_started], Time.utc_now)
   end
-  defp handle_build_result({output, _exit_status}) do
+  defp handle_build_result({output, _exit_status}, _config) do
     raise "External webpack pipeline failed to build\n\n#{output}"
   end
 

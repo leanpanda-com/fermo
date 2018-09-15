@@ -77,6 +77,8 @@ defmodule Fermo do
     get_config = quote do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
+        |> put_in([:stats], %{})
+        |> put_in([:stats, :start], Time.utc_now)
       end
     end
     defs ++ [get_config]
