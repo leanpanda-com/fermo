@@ -1,58 +1,91 @@
 defmodule Fermo.Pagination do
-  def paginate(config, template, items, base_params \\ %{}, options \\ %{}) do
-    # Remove existing single page from config.pages
-    pages = Map.get(config, :pages, [])
-    pages = Enum.filter(pages, fn (%{template: t}) -> t != template end)
+  @enforce_keys [:items, :page, :total_items, :base, :suffix]
+  defstruct items: nil,
+    page: nil,
+    per_page: 10,
+    total_items: nil,
+    base: nil,
+    suffix: "?page=:page",
+    first: nil
 
+  @type t() :: %__MODULE__{
+    items: Array.t(),
+    page: integer(),
+    per_page: integer(),
+    total_items: integer(),
+    base: String.t(),
+    suffix: String.t(),
+    first: String.t()
+  }
+
+  def paginate(config, template, options \\ %{}, context \\ %{}) do
+    base = options.base
+    items = options.items
+    per_page = options[:per_page] || 10
+    suffix = options[:suffix] || "pages/:page/index.html"
     total_items = length(items)
-    per_page = 10 # TODO: how many?
-    page_count = (total_items - 1) / per_page + 1
-
-    base = base_path(template)
 
     paginated = Stream.chunk(items, per_page, per_page, [])
     |> Stream.with_index
     |> Enum.map(fn ({chunk, i}) ->
       # index is 1 based
       index = i + 1
-      params = %{
-        pagination: %{
-          items: chunk,
-          page: index,
-          prev_page: page_url(base, index - 1, page_count),
-          next_page: page_url(base, index + 1, page_count)
-        }
+      pagination = %__MODULE__{
+        items: chunk,
+        total_items: total_items,
+        page: index,
+        per_page: per_page,
+        base: base,
+        suffix: suffix
       }
       Fermo.page_from(
         template,
-        page_path(base, index, page_count),
-        Map.merge(params, base_params),
-        options
+        page_path(pagination),
+        %{pagination: pagination},
+        context
       )
     end)
+
+    pages = Map.get(config, :pages, [])
     put_in(config, [:pages], pages ++ paginated)
   end
 
-  defp base_path("index.html.slim"), do: ""
-  defp base_path(template) do
+  def total_pages(%__MODULE__{} = pagination) do
+    round((pagination.total_items - 1) / pagination.per_page + 1)
+  end
+
+  def paginatable?(%__MODULE__{} = pagination) do
+    pagination.page > 1 || pagination.page < total_pages(pagination)
+  end
+
+  def prev_page(%__MODULE__{} = pagination) do
+    to_page(pagination, pagination.page - 1)
+  end
+
+  def next_page(%__MODULE__{} = pagination) do
+    to_page(pagination, pagination.page + 1)
+  end
+
+  def to_page(%__MODULE__{} = pagination, page) do
+    page_path(%__MODULE__{pagination | page: page, items: []})
+  end
+
+  def page_path(%__MODULE__{} = pagination) do
     cond do
-      String.ends_with?(template, "/index.html.slim") ->
-        String.trim_trailing(template, "/index.html.slim")
-      String.ends_with?(template, ".html.slim") ->
-        String.trim_trailing(template, ".html.slim")
+      pagination.page < 1 -> nil
+      pagination.page == 1 && pagination.first ->
+        pagination.base <> pagination.first
+      pagination.page > total_pages(pagination) -> nil
+      true ->
+        path = Regex.replace(
+          ~r/:([\w_]+)/,
+          pagination.suffix,
+          fn _, name ->
+            num = Map.get(pagination, String.to_atom(name))
+            Integer.to_charlist(num) |> List.to_string
+          end
+        )
+        pagination.base <> path
     end
   end
-
-  def page_url(base, index, page_count) do
-    page_path(base, index, page_count) |> path_to_url
-  end
-
-  def path_to_url(nil), do: nil
-  def path_to_url(path), do: %{url: "/" <> path}
-
-  defp page_path(_base, index, _page_count) when index < 1, do: nil
-  defp page_path(_base, 1, 0), do: nil
-  defp page_path(base, 1, _page_count), do: base <> "/index.html"
-  defp page_path(_base, index, page_count) when index > page_count, do: nil
-  defp page_path(base, index, _page_count), do: base <> "/pages/#{index}.html"
 end
