@@ -1,7 +1,11 @@
 defmodule Fermo.Localizable do
   def add(config) do
     locales = config[:i18n]
-    default_locale = hd(locales)
+    default_locale = if Map.has_key?(config, :default_locale) do
+      config[:default_locale]
+    else
+      hd(locales)
+    end
 
     exclude = Map.get(config, :exclude, []) ++ ["localizable/*"]
     config = put_in(config, [:exclude], exclude)
