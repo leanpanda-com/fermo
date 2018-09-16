@@ -129,8 +129,8 @@ defmodule Fermo do
     Fermo.add_page(config, template, target, params, options)
   end
 
-  def paginate(config, template, options \\ %{}, context \\ %{}) do
-    Fermo.Pagination.paginate(config, template, options, context)
+  def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
+    Fermo.Pagination.paginate(config, template, options, context, fun)
   end
 
   def page_from(template, target, params \\ %{}, options \\ %{}) do

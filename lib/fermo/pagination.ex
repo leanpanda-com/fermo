@@ -18,7 +18,7 @@ defmodule Fermo.Pagination do
     first: String.t()
   }
 
-  def paginate(config, template, options \\ %{}, context \\ %{}) do
+  def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
     base = options.base
     items = options.items
     per_page = options[:per_page] || 10
@@ -38,11 +38,18 @@ defmodule Fermo.Pagination do
         base: base,
         suffix: suffix
       }
+
+      {prms, ctx} = if fun do
+        fun.({%{pagination: pagination}, context}, index)
+      else
+        {%{pagination: pagination}, context}
+      end
+
       Fermo.page_from(
         template,
         page_path(pagination),
-        %{pagination: pagination},
-        context
+        prms,
+        ctx
       )
     end)
 
