@@ -20,9 +20,9 @@ defmodule Fermo.Localizable do
         target = Fermo.template_to_target(target, as_index_html: true)
         Enum.reduce(locales, config, fn (locale, config) ->
           localized_target = if locale == default_locale do
-              target
+              "/#{target}"
             else
-              "#{locale}/#{target}"
+              "/#{locale}/#{target}"
             end
           Fermo.add_page(config, template, localized_target, %{}, %{locale: locale})
         end)
