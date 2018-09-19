@@ -168,7 +168,7 @@ defmodule Fermo do
     built_pages = Enum.map(
       config.pages,
       &Task.async(fn -> render_page(module, &1) end)
-    ) |> Enum.map(&Task.await(&1, 30000))
+    ) |> Enum.map(&Task.await(&1, 600000))
 
     put_in(config, [:stats, :pages_built], Time.utc_now)
     |> put_in([:pages], built_pages)
