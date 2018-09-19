@@ -23,6 +23,7 @@ defmodule Fermo.Pagination do
     items = options.items
     per_page = options[:per_page] || 10
     suffix = options[:suffix] || "pages/:page/index.html"
+    first = options[:first]
     total_items = length(items)
 
     paginated = Stream.chunk(items, per_page, per_page, [])
@@ -36,7 +37,8 @@ defmodule Fermo.Pagination do
         page: index,
         per_page: per_page,
         base: base,
-        suffix: suffix
+        suffix: suffix,
+        first: first
       }
 
       {prms, ctx} = if fun do
