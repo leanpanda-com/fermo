@@ -272,8 +272,7 @@ defmodule Fermo do
     content_for_catchall = quote bind_quoted: [template: template] do
       # When no matching `content_for` is found for a yield_content, return ""
       template_atom = String.to_atom(template)
-      # args = [template_atom, Macro.var(:_key, nil), Macro.var(:_params, nil), Macro.var(:_context, nil)]
-      args = [template_atom, :head, Macro.var(:_params, nil), Macro.var(:_context, nil)]
+      args = [template_atom, Macro.var(:_key, nil), Macro.var(:_params, nil), Macro.var(:_context, nil)]
       def content_for(unquote_splicing(args)) do
         ""
       end
