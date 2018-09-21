@@ -77,6 +77,8 @@ defmodule Fermo do
     get_config = quote do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
+        |> put_in([:pages], [])
+        |> put_in([:statics], [])
         |> put_in([:stats], %{})
         |> put_in([:stats, :start], Time.utc_now)
       end
@@ -149,7 +151,7 @@ defmodule Fermo do
   end
 
   def add_static(config, source, target) do
-    statics = Map.get(config, :statics, [])
+    statics = Map.get(config, :statics)
     put_in(config, [:statics], statics ++ [%{source: source, target: target}])
   end
 
