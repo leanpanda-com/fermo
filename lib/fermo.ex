@@ -2,6 +2,8 @@ defmodule Fermo do
   require EEx
   require Slime
 
+  @source_path "priv/source"
+
   def start(_start_type, _args \\ []) do
     I18n.start_link()
     Fermo.Assets.start_link()
@@ -188,7 +190,7 @@ defmodule Fermo do
     statics = config[:statics]
     build_path = get_in(config, [:build_path])
     Enum.each(statics, fn (%{source: source, target: target}) ->
-      source_pathname = Path.join(source_path(), source)
+      source_pathname = Path.join(@source_path, source)
       target_pathname = Path.join(build_path, target)
       File.cp_r(source_pathname, target_pathname)
     end)
@@ -304,8 +306,6 @@ defmodule Fermo do
   end
 
   defp full_template_path(path) do
-    Path.join(source_path(), path)
+    Path.join(@source_path, path)
   end
-
-  defp source_path, do: "priv/source"
 end
