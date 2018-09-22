@@ -89,26 +89,15 @@ defmodule Fermo do
 
   def deftemplate(template) do
     [frontmatter, body, content_fors] = parse_template(template)
-    name = String.to_atom(template)
-    eex_source = Slime.Renderer.precompile(body)
+
+    eex_source = precompile_slim(body, template)
+
     defs = quote bind_quoted: binding() do
-      compiled =
-        try do
-          info = [file: template, line: 1]
-          EEx.compile_string(eex_source, info)
-        rescue
-          e ->
-            IO.puts "Failed to precompile template: '#{template}'"
-            IO.puts "\nbody:\n#{body}\n"
-            raise e
-        catch
-          e ->
-            IO.puts "Failed to precompile template: '#{template}'"
-            IO.puts "\nbody:\n#{body}\n"
-            raise e
-        end
+      info = [file: template, line: 1]
+      compiled = EEx.compile_string(eex_source, info)
       escaped_frontmatter = Macro.escape(frontmatter)
       args = [Macro.var(:params, nil), Macro.var(:context, nil)]
+      name = String.to_atom(template)
 
       # Define a method with the frontmatter, so we can merge with
       # params when the template is evaluated
@@ -204,6 +193,18 @@ defmodule Fermo do
     end)
   end
 
+  defp precompile_slim(body, template, type \\ "template") do
+    try do
+      Slime.Renderer.precompile(body)
+    rescue
+      e in Slime.TemplateSyntaxError -> e
+        line = e.line_number
+        IO.puts "Failed to precompile #{type} in '#{template}' at line #{line}"
+        IO.puts "body:\n#{body}\n\n"
+        raise e
+    end
+  end
+
   defp render_page(module, %{template: template, pathname: pathname} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
@@ -250,23 +251,12 @@ defmodule Fermo do
     block = String.replace(block, ~r/^[\s\r\n]*/, "", global: false)
     # Strip indentation
     block = String.replace(block, ~r/^  /m, "")
-    cf_def = quote bind_quoted: [block: block, template: template, key: key] do
-      eex_source = Slime.Renderer.precompile(block)
-      compiled =
-        try do
-          info = [file: template, line: 1]
-          EEx.compile_string(eex_source, info)
-        rescue
-          e ->
-            IO.puts "Failed to precompile content_for block in '#{template}'"
-            IO.puts "block: #{block}"
-            raise e
-        catch
-          e ->
-            IO.puts "Failed to precompile content_for block in '#{template}'"
-            IO.puts "block: #{block}"
-            raise e
-        end
+
+    eex_source = precompile_slim(block, template, "content_for block")
+
+    cf_def = quote bind_quoted: [eex_source: eex_source, template: template, key: key] do
+      info = [file: template, line: 1]
+      compiled = EEx.compile_string(eex_source, info)
       template_atom = String.to_atom(template)
       name = String.to_atom(key)
       args = [template_atom, name, Macro.var(:params, nil), Macro.var(:context, nil)]
