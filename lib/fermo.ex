@@ -159,7 +159,7 @@ defmodule Fermo do
     }
   end
 
-  defmacro build(config \\ %{}) do
+  defmacro build(config) do
     quote bind_quoted: binding() do
       Fermo.do_build(__MODULE__, config)
     end
