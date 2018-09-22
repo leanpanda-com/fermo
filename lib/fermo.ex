@@ -172,6 +172,7 @@ defmodule Fermo do
     File.mkdir(build_path)
     copy_statics(config)
 
+    # TODO: check if Webpack assets are ready before building HTML
     built_pages = Enum.map(
       config.pages,
       fn %{target: target} = page ->
