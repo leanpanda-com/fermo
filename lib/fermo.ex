@@ -198,7 +198,7 @@ defmodule Fermo do
     try do
       Slime.Renderer.precompile(body)
     rescue
-      e in Slime.TemplateSyntaxError -> e
+      e in Slime.TemplateSyntaxError ->
         line = e.line_number
         IO.puts "Failed to precompile #{type} in '#{template}' at line #{line}"
         IO.puts "body:\n#{body}\n\n"
