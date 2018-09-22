@@ -64,6 +64,7 @@ defmodule Fermo do
     get_config = quote do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
+        |> put_in([:build_path], "build")
         |> put_in([:pages], [])
         |> put_in([:statics], [])
         |> put_in([:stats], %{})
@@ -176,19 +177,34 @@ defmodule Fermo do
   def do_build(module, config) do
     Fermo.Helpers.I18n.load!(config)
 
-    File.mkdir(build_path())
+    build_path = get_in(config, [:build_path])
+    File.mkdir(build_path)
     copy_statics(config)
 
     built_pages = Enum.map(
       config.pages,
-      &Task.async(fn -> render_page(module, &1) end)
-    ) |> Enum.map(&Task.await(&1, 600000))
+      fn %{target: target} = page ->
+        pathname = Path.join(build_path, target)
+        page = put_in(page, [:pathname], pathname)
+        Task.async(fn -> render_page(module, page) end)
+      end)
+      |> Enum.map(&Task.await(&1, 600000))
 
     put_in(config, [:stats, :pages_built], Time.utc_now)
     |> put_in([:pages], built_pages)
   end
 
-  defp render_page(module, %{template: template, target: target} = page) do
+  defp copy_statics(config) do
+    statics = config[:statics]
+    build_path = get_in(config, [:build_path])
+    Enum.each(statics, fn (%{source: source, target: target}) ->
+      source_pathname = Path.join(source_path(), source)
+      target_pathname = Path.join(build_path, target)
+      File.cp_r(source_pathname, target_pathname)
+    end)
+  end
+
+  defp render_page(module, %{template: template, pathname: pathname} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     layout = if Map.has_key?(defaults, "layout") do
@@ -203,13 +219,12 @@ defmodule Fermo do
       content
     end
 
-    save_file(target, body)
+    save_file(pathname, body)
 
     put_in(page, [:body], body)
   end
 
-  defp save_file(target, body) do
-    pathname = Path.join(build_path(), target)
+  defp save_file(pathname, body) do
     path = Path.dirname(pathname)
     File.mkdir_p(path)
     File.write!(pathname, body, [:write])
@@ -276,15 +291,6 @@ defmodule Fermo do
     [content_fors, Enum.join([head] ++ cleaned_parts, "\n")]
   end
 
-  defp copy_statics(config) do
-    statics = config[:statics]
-    Enum.each(statics, fn (%{source: source, target: target}) ->
-      source_pathname = Path.join(source_path(), source)
-      target_pathname = Path.join(build_path(), target)
-      File.cp_r(source_pathname, target_pathname)
-    end)
-  end
-
   defp parse_template(template) do
     [frontmatter, body] = File.read(full_template_path(template))
     |> split_template
@@ -311,5 +317,4 @@ defmodule Fermo do
   end
 
   defp source_path, do: "priv/source"
-  defp build_path, do: "build" # TODO: put in config
 end
