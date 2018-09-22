@@ -176,8 +176,9 @@ defmodule Fermo do
         pathname = Path.join(build_path, target)
         page = put_in(page, [:pathname], pathname)
         Task.async(fn -> render_page(module, page) end)
-      end)
-      |> Enum.map(&Task.await(&1, 600000))
+      end
+    )
+    |> Enum.map(&Task.await(&1, 600000))
 
     put_in(config, [:stats, :pages_built], Time.utc_now)
     |> put_in([:pages], built_pages)
