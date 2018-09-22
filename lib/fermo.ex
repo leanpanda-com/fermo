@@ -45,19 +45,6 @@ defmodule Fermo do
     end
   end
 
-  def template_to_target(template, opts \\ [])
-  def template_to_target(template, as_index_html: true) do
-    target = String.replace(template, ".slim", "")
-    if target == "index.html" || String.ends_with?(target, "/index.html") do
-      target
-    else
-      String.replace(target, ".html", "/index.html")
-    end
-  end
-  def template_to_target(template, _opts) do
-    String.replace(template, ".slim", "")
-  end
-
   @doc false
   defmacro __before_compile__(env) do
     config = Module.get_attribute(env.module, :config)
@@ -86,8 +73,13 @@ defmodule Fermo do
     defs ++ [get_config]
   end
 
-  defp source_path, do: "priv/source"
-  defp build_path, do: "build"
+  def proxy(config, template, target, params \\ nil, options \\ nil) do
+    Fermo.add_page(config, template, target, params, options)
+  end
+
+  def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
+    Fermo.Pagination.paginate(config, template, options, context, fun)
+  end
 
   def deftemplate(template) do
     [frontmatter, body, content_fors] = parse_template(template)
@@ -127,21 +119,27 @@ defmodule Fermo do
     [defs] ++ content_fors
   end
 
-  def proxy(config, template, target, params \\ nil, options \\ nil) do
-    Fermo.add_page(config, template, target, params, options)
+  def template_to_target(template, opts \\ [])
+  def template_to_target(template, as_index_html: true) do
+    target = String.replace(template, ".slim", "")
+    if target == "index.html" || String.ends_with?(target, "/index.html") do
+      target
+    else
+      String.replace(target, ".html", "/index.html")
+    end
+  end
+  def template_to_target(template, _opts) do
+    String.replace(template, ".slim", "")
   end
 
-  def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
-    Fermo.Pagination.paginate(config, template, options, context, fun)
-  end
-
-  def page_from(template, target, params \\ %{}, options \\ %{}) do
-    %{
+  def render_template(module, template, page, params \\ %{}) do
+    context = %{
+      module: module,
       template: template,
-      target: target,
-      params: params,
-      options: options
+      page: page
     }
+    name = String.to_atom(template)
+    apply(module, name, [params, context])
   end
 
   def add_page(config, template, target, params \\ %{}, options \\ %{}) do
@@ -153,6 +151,15 @@ defmodule Fermo do
   def add_static(config, source, target) do
     statics = Map.get(config, :statics)
     put_in(config, [:statics], statics ++ [%{source: source, target: target}])
+  end
+
+  def page_from(template, target, params \\ %{}, options \\ %{}) do
+    %{
+      template: template,
+      target: target,
+      params: params,
+      options: options
+    }
   end
 
   defmacro build(config \\ %{}) do
@@ -176,7 +183,7 @@ defmodule Fermo do
     |> put_in([:pages], built_pages)
   end
 
-  def render_page(module, %{template: template, target: target} = page) do
+  defp render_page(module, %{template: template, target: target} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     layout = if Map.has_key?(defaults, "layout") do
@@ -203,28 +210,18 @@ defmodule Fermo do
     File.write!(pathname, body, [:write])
   end
 
-  def render_template(module, template, page, params \\ %{}) do
-    context = %{
-      module: module,
-      template: template,
-      page: page
-    }
-    name = String.to_atom(template)
-    apply(module, name, [params, context])
-  end
-
-  def render_body(module, %{template: template, params: params} = page, defaults) do
+  defp render_body(module, %{template: template, params: params} = page, defaults) do
     args = Map.merge(defaults, params)
     render_template(module, template, page, args)
   end
 
-  def build_layout_with_content(module, content, page, layout) do
+  defp build_layout_with_content(module, content, page, layout) do
     layout_template = "layouts/" <> layout
     layout_params = %{content: content}
     render_template(module, layout_template, page, layout_params)
   end
 
-  def extract_content_for_block(template, part) do
+  defp extract_content_for_block(template, part) do
     # Extract the content_for block (until the next line that isn't indented)
     # TODO: the block should not stop at the first non-indented **empty** line,
     #   it should continue to the first non-indented line with text
@@ -261,10 +258,11 @@ defmodule Fermo do
         unquote(compiled)
       end
     end
+
     [cf_def, cleaned]
   end
 
-  def extract_content_for_blocks(template, body) do
+  defp extract_content_for_blocks(template, body) do
     [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
     {content_fors, cleaned_parts} = Enum.reduce(parts, {[], []}, fn (part, {cfs, ps}) ->
       [new_cf, cleaned] = extract_content_for_block(template, part)
@@ -291,7 +289,7 @@ defmodule Fermo do
     end)
   end
 
-  def parse_template(template) do
+  defp parse_template(template) do
     [frontmatter, body] = File.read(full_template_path(template))
     |> split_template
 
@@ -315,4 +313,7 @@ defmodule Fermo do
   defp full_template_path(path) do
     Path.join(source_path(), path)
   end
+
+  defp source_path, do: "priv/source"
+  defp build_path, do: "build" # TODO: put in config
 end
