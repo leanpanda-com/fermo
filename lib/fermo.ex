@@ -50,6 +50,16 @@ defmodule Fermo do
   @doc false
   defmacro __before_compile__(env) do
     config = Module.get_attribute(env.module, :config)
+    build_path = config[:build_path] || "build"
+    pages = config[:pages] || []
+    statics = config[:statics] || []
+
+    config =
+      config
+      |> put_in([:build_path], build_path)
+      |> put_in([:pages], pages)
+      |> put_in([:statics], statics)
+      |> put_in([:stats], %{})
 
     config = Fermo.Localizable.add(config)
     config = Fermo.Simple.add(config)
@@ -66,10 +76,6 @@ defmodule Fermo do
     get_config = quote do
       def config() do
         hd(__MODULE__.__info__(:attributes)[:config])
-        |> put_in([:build_path], "build")
-        |> put_in([:pages], [])
-        |> put_in([:statics], [])
-        |> put_in([:stats], %{})
         |> put_in([:stats, :start], Time.utc_now)
       end
 
