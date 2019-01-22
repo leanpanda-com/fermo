@@ -4,7 +4,7 @@ defmodule Mix.Tasks.Fermo.Build do
   @shortdoc "Generates the output files"
 
   @moduledoc """
-  Builds the project according to the settings in priv/config.exs
+  Builds the project according to the settings in __MODULE__.build()
   """
   def run(_args) do
     Mix.Task.run "app.start"
