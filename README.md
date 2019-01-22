@@ -7,7 +7,7 @@ Create an Elixir project.
 Add the dependency to `mix.exs`:
 
 ```elixir
-{:fermo, "~> 0.0.1"}
+{:fermo, "~> 0.1.5"}
 ```
 
 Get dependencies:
