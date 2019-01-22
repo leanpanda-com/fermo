@@ -20,7 +20,9 @@ defmodule Mix.Tasks.Fermo.Build do
   end
 
   defp log(message, stats, from, to) do
-    diff = Time.diff(stats[to], stats[from], :microsecond)
-    IO.puts "#{message}: #{diff / 1000000}s"
+    if (stats[to] != nil) and (stats[from]) != nil do
+      diff = Time.diff(stats[to], stats[from], :microsecond)
+      IO.puts "#{message}: #{diff / 1000000}s"
+    end
   end
 end
