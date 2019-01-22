@@ -219,7 +219,7 @@ defmodule Fermo do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     layout = if Map.has_key?(defaults, "layout") do
-      defaults["layout"]
+      defaults["layout"] <> ".html.slim"
     else
       "layout.html.slim" # TODO: make this a setting
     end
