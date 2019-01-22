@@ -3,7 +3,7 @@ defmodule Fermo.Assets do
 
   @moduledoc """
   Handles the external (Webpack) pipeline.
-  
+
   Runs the pipeline, then loads the manifest it produces into a GenServer
   in order to provide asset name mapping.
   """
