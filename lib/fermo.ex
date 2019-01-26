@@ -27,7 +27,8 @@ defmodule Fermo do
         template = "partials/_#{name}.html.slim"
         quote do
           page = var!(context)[:page]
-          Fermo.render_template(__MODULE__, unquote(template), page, unquote(params))
+          params = var!(params) || %{}
+          Fermo.render_template(__MODULE__, unquote(template), page, params)
         end
       end
 
