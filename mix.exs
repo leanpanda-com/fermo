@@ -27,7 +27,7 @@ defmodule Fermo.MixProject do
       {:ex_doc, "~> 0.19", only: :dev},
       {:exjsx, "~> 3.2"},
       {:morphix, "~> 0.0.7"},
-      {:slime, "~> 1.0.0"},
+      {:slime, "~> 1.0"},
       {:yaml_elixir, "~> 1.3.0"}
     ]
   end
