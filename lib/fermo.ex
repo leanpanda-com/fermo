@@ -180,24 +180,14 @@ defmodule Fermo do
     copy_statics(config)
 
     # TODO: check if Webpack assets are ready before building HTML
-    built_pages = Enum.map(
+    built = Task.async_stream(
       config.pages,
       fn %{target: target} = page ->
         pathname = Path.join(build_path, target)
         page = put_in(page, [:pathname], pathname)
-        if config[:synchronous] do
-          render_page(module, page)
-        else
-          Task.async(fn -> render_page(module, page) end)
-        end
+        render_page(module, page)
       end
-    )
-
-    built = if config[:synchronous] do
-      built_pages
-    else
-      Enum.map(built_pages, &Task.await(&1, 600000))
-    end
+    ) |> Enum.to_list
 
     put_in(config, [:stats, :pages_built], Time.utc_now)
     |> put_in([:pages], built)
