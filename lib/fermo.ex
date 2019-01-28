@@ -101,9 +101,9 @@ defmodule Fermo do
 
     eex_source = precompile_slim(body, template)
 
-    defs = quote bind_quoted: binding() do
-      info = [file: template, line: 1]
-      compiled = EEx.compile_string(eex_source, info)
+    full_template_path = Fermo.full_template_path(template)
+    defs = quote bind_quoted: binding(), file: full_template_path do
+      compiled = EEx.compile_string(eex_source)
       escaped_frontmatter = Macro.escape(frontmatter)
       args = [Macro.var(:params, nil), Macro.var(:context, nil)]
       name = String.to_atom(template)
@@ -322,7 +322,7 @@ defmodule Fermo do
     [Macro.escape(%{}, unquote: true), body]
   end
 
-  defp full_template_path(path) do
+  def full_template_path(path) do
     Path.join(@source_path, path)
   end
 end
