@@ -26,9 +26,9 @@ defmodule Fermo do
       defmacro partial(name, params \\ nil) do
         template = "partials/_#{name}.html.slim"
         quote do
-          page = var!(context)[:page]
-          params = var!(params) || %{}
-          Fermo.render_template(__MODULE__, unquote(template), page, params)
+          context = var!(context)
+          page = context[:page]
+          Fermo.render_template(__MODULE__, unquote(template), page, unquote(params) || %{})
         end
       end
 
