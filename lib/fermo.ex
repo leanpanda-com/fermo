@@ -177,20 +177,10 @@ defmodule Fermo do
 
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)
+
     copy_statics(config)
 
-    # TODO: check if Webpack assets are ready before building HTML
-    built = Task.async_stream(
-      config.pages,
-      fn %{target: target} = page ->
-        pathname = Path.join(build_path, target)
-        page = put_in(page, [:pathname], pathname)
-        render_page(module, page)
-      end
-    ) |> Enum.to_list
-
-    put_in(config, [:stats, :pages_built], Time.utc_now)
-    |> put_in([:pages], built)
+    build_pages(module, config)
   end
 
   defp copy_statics(config) do
@@ -199,11 +189,64 @@ defmodule Fermo do
     Enum.each(statics, fn (%{source: source, target: target}) ->
       source_pathname = Path.join(@source_path, source)
       target_pathname = Path.join(build_path, target)
-      File.cp_r(source_pathname, target_pathname)
+      copy_file(source_pathname, target_pathname)
     end)
   end
 
-  defp render_page(module, %{template: template, pathname: pathname} = page) do
+  defp build_pages(module, config) do
+    # TODO: check if Webpack assets are ready before building HTML
+    build_path = get_in(config, [:build_path])
+
+    built = Task.async_stream(
+      config.pages,
+      fn %{target: target} = page ->
+        pathname = Path.join(build_path, target)
+        page = put_in(page, [:pathname], pathname)
+        render_page(module, page)
+      end,
+      [timeout: :infinity]
+    ) |> Enum.to_list
+
+    config
+    |> put_in([:stats, :pages_built], Time.utc_now)
+    |> put_in([:pages], built)
+  end
+
+  defp render_page(module, page) do
+    with {:ok, hash} <- cache_key(page),
+      {:ok, cache_pathname} <- cached_page_path(hash),
+      {:ok} <- is_cached?(cache_pathname) do
+      copy_file(cache_pathname, page.pathname)
+    else
+      {:build_and_cache, cache_pathname} ->
+        body = inner_render_page(module, page)
+        save_file(cache_pathname, body)
+        save_file(page.pathname, body)
+      _ ->
+        body = inner_render_page(module, page)
+        save_file(page.pathname, body)
+    end
+  end
+
+  defp cache_key(%{options: %{surrogate_key: surrogate_key}}) do
+    hash = :crypto.hash(:sha256, surrogate_key) |> Base.encode16
+    {:ok, hash}
+  end
+  defp cache_key(_page), do: {:no_key}
+
+  defp cached_page_path(hash) do
+    {:ok, Path.join("tmp/page_cache", hash)}
+  end
+
+  defp is_cached?(cached_pathname) do
+    if File.exists?(cached_pathname) do
+      {:ok}
+    else
+      {:build_and_cache, cached_pathname}
+    end
+  end
+
+  defp inner_render_page(module, %{template: template, pathname: pathname} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     layout = if Map.has_key?(defaults, "layout") do
@@ -216,15 +259,17 @@ defmodule Fermo do
       "layout.html.slim" # TODO: make this a setting
     end
     content = render_body(module, page, defaults)
-    body = if layout do
+    if layout do
       build_layout_with_content(module, content, page, layout)
     else
       content
     end
+  end
 
-    save_file(pathname, body)
-
-    put_in(page, [:body], body)
+  defp copy_file(source, destination) do
+    path = Path.dirname(destination)
+    File.mkdir_p(path)
+    File.cp(source, destination)
   end
 
   defp save_file(pathname, body) do
