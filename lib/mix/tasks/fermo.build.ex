@@ -11,12 +11,18 @@ defmodule Mix.Tasks.Fermo.Build do
     project = Mix.Project.get()
     [main | _rest] = Module.split(project)
     module = String.to_existing_atom("Elixir.#{main}")
-    config = module.build()
-    stats = config.stats
+    {:ok, config} = module.build()
+    stats = Map.get(config, :stats)
+    if stats do
+      do_log(stats)
+    end
+    {:ok}
+  end
+
+  defp do_log(stats) do
     log("Data load", stats, :start, :data_loaded)
     log("Page preparation", stats, :prepare_pages, :pages_prepared)
     log("Build", stats, :pages_prepared, :pages_built)
-    {:ok}
   end
 
   defp log(message, stats, from, to) do
