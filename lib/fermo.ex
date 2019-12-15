@@ -88,7 +88,7 @@ defmodule Fermo do
     defs ++ [get_config]
   end
 
-  def proxy(config, template, target, params \\ nil, options \\ nil) do
+  def page(config, template, target, params \\ nil, options \\ nil) do
     Fermo.add_page(config, template, target, params, options)
   end
 
