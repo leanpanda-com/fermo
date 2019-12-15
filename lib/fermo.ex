@@ -268,9 +268,9 @@ defmodule Fermo do
 
     eex_source = precompile_slim(block, template, "content_for block")
 
-    cf_def = quote bind_quoted: [eex_source: eex_source, template: template, key: key] do
-      info = [file: template, line: 1]
-      compiled = EEx.compile_string(eex_source, info)
+    full_template_path = Fermo.full_template_path(template)
+    cf_def = quote bind_quoted: binding(), file: full_template_path do
+      compiled = EEx.compile_string(eex_source)
       template_atom = String.to_atom(template)
       name = String.to_atom(key)
       args = [template_atom, name, Macro.var(:params, nil), Macro.var(:context, nil)]
