@@ -21,7 +21,7 @@ defmodule Fermo.Pagination do
   def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
     base = options.base
     items = options.items
-    per_page = options[:per_page] || 10
+    per_page = options[:per_page] || 20
     suffix = options[:suffix] || "pages/:page/index.html"
     first = options[:first]
     total_items = length(items)
