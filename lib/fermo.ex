@@ -203,18 +203,6 @@ defmodule Fermo do
     end)
   end
 
-  defp precompile_slim(body, template, type \\ "template") do
-    try do
-      Slime.Renderer.precompile(body)
-    rescue
-      e in Slime.TemplateSyntaxError ->
-        line = e.line_number
-        IO.puts "Failed to precompile #{type} in '#{template}' at line #{line}"
-        IO.puts "body:\n#{body}\n\n"
-        raise e
-    end
-  end
-
   defp render_page(module, %{template: template, pathname: pathname} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
@@ -254,6 +242,18 @@ defmodule Fermo do
     layout_template = "layouts/" <> layout
     layout_params = %{content: content}
     render_template(module, layout_template, page, layout_params)
+  end
+
+  defp precompile_slim(body, template, type \\ "template") do
+    try do
+      Slime.Renderer.precompile(body)
+    rescue
+      e in Slime.TemplateSyntaxError ->
+        line = e.line_number
+        IO.puts "Failed to precompile #{type} in '#{template}' at line #{line}"
+        IO.puts "body:\n#{body}\n\n"
+        raise e
+    end
   end
 
   defp extract_content_for_block(template, part) do
