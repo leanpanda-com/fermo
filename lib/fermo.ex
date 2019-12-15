@@ -296,6 +296,7 @@ defmodule Fermo do
   end
 
   defp parse_template(template) do
+    IO.puts "parsing template: #{template}"
     [frontmatter, body] = File.read(full_template_path(template))
     |> split_template
 
