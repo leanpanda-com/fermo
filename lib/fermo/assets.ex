@@ -53,8 +53,7 @@ defmodule Fermo.Assets do
   def handle_call({:path, name}, _from, state) do
     if Map.has_key?(state, name) do
       path = state[name]
-      absolute_path = "/" <> path
-      {:reply, {:ok, absolute_path}, state}
+      {:reply, {:ok, path}, state}
     else
       {:reply, {:error, "'#{name}' not found in manifest"}, state}
     end
