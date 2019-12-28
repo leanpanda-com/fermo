@@ -58,19 +58,12 @@ Dynamic, data-based pages are created with the `page` method.
 
 # Defaults
 
-Fermo was build to mimic the behaviour of Middleman, so it's defaults
-tend to be the same its progenitor.
-
 A number of helper methods are provided (e.g. `javascript_include_tag`) to
 allow easy porting of Middleman projects.
 
 # Templates
 
 Currently, Fermo only supports SLIM templates for HTML.
-
-## Fermo and SLIM
-
-See [here](FermoSLIM.md).
 
 ## Parameters
 
@@ -99,6 +92,13 @@ Information about the top-level page.
 
 Partials are also called with the same 2 parameters, but the values in `:page`
 are those of the top-level page, not the partial itself.
+
+# Middleman to Fermo
+
+Fermo was build to mimic the behaviour of Middleman, so it's defaults
+tend to be the same its progenitor.
+
+See [here](MiddlemanToFermo.md).
 
 # Assets
 
