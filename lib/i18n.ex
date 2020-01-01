@@ -9,39 +9,11 @@ defmodule I18n do
     GenServer.start_link(__MODULE__, [], name: :i18n)
   end
 
-  def put(translation_tree, locale) do
+  def put(translation_tree) do
     {:ok, collapsed} = collapse(translation_tree)
-    {:ok} = GenServer.call(:i18n, {:put, {collapsed, locale}})
+    {:ok} = GenServer.call(:i18n, {:put, {collapsed}})
   end
 
-  # Deprecated
-  def set_locale(locale) when is_atom(locale) do
-    {:ok} = GenServer.call(:i18n, {:set_locale, locale})
-  end
-  # Deprecated
-  def set_locale(locale) do
-    set_locale(String.to_atom(locale))
-  end
-
-  # Deprecated
-  def get_locale do
-    GenServer.call(:i18n, {:get_locale})
-  end
-
-  # Deprecated
-  def get_locale! do
-    {:ok, locale} = get_locale()
-    locale
-  end
-
-  # Deprecated
-  def translate(key) when is_list(key) do
-    translate(to_string(key))
-  end
-  # Deprecated
-  def translate(key) do
-    GenServer.call(:i18n, {:translate, key})
-  end
   def translate(key, locale) when is_list(key) do
     translate(to_string(key), locale)
   end
@@ -49,20 +21,11 @@ defmodule I18n do
     GenServer.call(:i18n, {:translate, key, locale})
   end
 
-  # Deprecated
-  def translate!(key) do
-    {:ok, translation} = translate(key)
-    translation
-  end
   def translate!(key, locale) do
     {:ok, translation} = translate(key, locale)
     translation
   end
 
-  # Deprecated
-  def t(key) do
-    translate!(key)
-  end
   def t(key, locale) do
     translate!(key, locale)
   end
@@ -70,19 +33,7 @@ defmodule I18n do
   def handle_call({:put, state}, _from, _state) do
     {:reply, {:ok}, state}
   end
-  # Deprecated
-  def handle_call({:set_locale, locale}, _from, {translations, _locale}) do
-    {:reply, {:ok}, {translations, locale}}
-  end
-  # Deprecated
-  def handle_call({:get_locale}, _from, {_translations, locale} = state) do
-    {:reply, {:ok, locale}, state}
-  end
-  # Deprecated
-  def handle_call({:translate, key}, _from, {translations, locale} = state) do
-    {:reply, {:ok, translations[locale][key]}, state}
-  end
-  def handle_call({:translate, key, locale}, _from, {translations, _locale} = state) do
+  def handle_call({:translate, key, locale}, _from, {translations} = state) do
     {:reply, {:ok, translations[locale][key]}, state}
   end
 
