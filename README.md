@@ -58,8 +58,7 @@ Dynamic, data-based pages are created with the `page` method.
 
 # Defaults
 
-A number of helper methods are provided (e.g. `javascript_include_tag`) to
-allow easy porting of Middleman projects.
+A number of helper methods are provided (e.g. `javascript_include_tag`).
 
 # Templates
 

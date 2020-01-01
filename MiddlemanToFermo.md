@@ -1,3 +1,17 @@
+# Automatic Conversion of Middleman Projects
+
+Run the following, indicating the directory containing
+your existing Middleman SLIM files, and a destination directory.
+
+```sh
+$ mix fermo.middleman_importer \
+  --source middleman_project/source \
+  --destination fermo_project/priv/source
+```
+
+Your .slim files will get copied and updated to make them
+work with Elixir SLIM.
+
 # Fermo and SLIM
 
 Fermo uses `slime` - a SLIM implementation in Elixir.
@@ -7,11 +21,13 @@ Compared to the Ruby implementation:
 * SLIME doesn't support `=>` or `=<`,
 * `each` should be replaced by `Enum.map`,
 * `if` and `Enum.map` should be preceded by `=`,
-* Hash parameters `{}` should be surrounded by `%{}`,
-* The `locale` is included in the `context`,
-  and cannot be obtained from `I18n.locale`.
+* Partial parameters should be surrounded by `%{}`,
+* In partials, `locals:` is not available, get values from `params`,
+* The `locale` is included in the `context` as `context.page.options.locale`
+  and cannot be obtained from `I18n.locale`,
+* Use `params.content` in layouts instead of `yield`.
 
-# Convert Ruby SLIM to Elixir Slime
+# Converting Ruby SLIM to Elixir Slime
 
 * convert partial calls:
 
