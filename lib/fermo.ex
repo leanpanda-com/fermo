@@ -2,6 +2,10 @@ defmodule Fermo do
   require EEx
   require Slime
 
+  defmodule FermoError do
+    defexception [:message]
+  end
+
   @source_path "priv/source"
 
   def start(_start_type, _args \\ []) do
@@ -295,9 +299,15 @@ defmodule Fermo do
     rescue
       e in Slime.TemplateSyntaxError ->
         line = e.line_number
-        IO.puts "Failed to precompile #{type} in '#{template}' at line #{line}"
-        IO.puts "body:\n#{body}\n\n"
-        raise e
+        pathname = full_template_path(template)
+        message = """
+        SLIM template error: #{e.message}
+        Template type: #{type}
+        Path: '#{pathname}', line #{line + 1}
+
+        #{body}
+        """
+        raise FermoError, message: message
     end
   end
 
