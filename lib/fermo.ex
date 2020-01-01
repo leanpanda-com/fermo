@@ -27,12 +27,19 @@ defmodule Fermo do
       use Fermo.Helpers.I18n
       use Fermo.Helpers.Text
 
-      defmacro partial(name, params \\ nil) do
+      defmacro partial(name, params \\ nil, opts \\ nil) do
         template = "partials/_#{name}.html.slim"
         quote do
           context = var!(context)
           page = context[:page]
-          Fermo.render_template(__MODULE__, unquote(template), page, unquote(params) || %{})
+          opts = unquote(opts) || []
+          content = opts[:content]
+          p = if content do
+            put_in(unquote(params) || %{}, [:content], content)
+          else
+            unquote(params)
+          end
+          Fermo.render_template(__MODULE__, unquote(template), page, p)
         end
       end
 
