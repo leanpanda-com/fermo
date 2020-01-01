@@ -14,15 +14,16 @@ defmodule I18n do
     {:ok} = GenServer.call(:i18n, {:put, {collapsed}})
   end
 
-  def translate(key, locale) when is_list(key) do
-    translate(to_string(key), locale)
+  def translate(key, parameters \\ %{}, locale)
+  def translate(key, parameters, locale) when is_list(key) do
+    translate(to_string(key), parameters, locale)
   end
-  def translate(key, locale) do
-    GenServer.call(:i18n, {:translate, key, locale})
+  def translate(key, parameters, locale) do
+    GenServer.call(:i18n, {:translate, key, parameters, locale})
   end
 
-  def translate!(key, locale) do
-    {:ok, translation} = translate(key, locale)
+  def translate!(key, parameters \\ %{}, locale) do
+    {:ok, translation} = translate(key, parameters, locale)
     translation
   end
 
@@ -33,8 +34,9 @@ defmodule I18n do
   def handle_call({:put, state}, _from, _state) do
     {:reply, {:ok}, state}
   end
-  def handle_call({:translate, key, locale}, _from, {translations} = state) do
-    {:reply, {:ok, translations[locale][key]}, state}
+  def handle_call({:translate, key, parameters, locale}, _from, {translations} = state) do
+    translation = substitute(translations[locale][key], parameters)
+    {:reply, {:ok, translation}, state}
   end
 
   # We want to turn the nested structure into a simple Map
@@ -58,5 +60,14 @@ defmodule I18n do
   defp do_collapse({key, value}, parents) do
     keys = Enum.join(parents ++ [key], ".")
     {keys, value}
+  end
+
+  defp substitute(translation, %{}), do: translation
+  defp substitute(translation, parameters) do
+    Regex.replace(
+      ~r/%\{([^}]+)\}/,
+      translation,
+      fn _match, key -> parameters[String.to_atom(key)] || "" end
+    )
   end
 end

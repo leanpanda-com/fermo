@@ -4,8 +4,8 @@ defmodule Fermo.Helpers.I18n do
     quote do
       require Fermo.Helpers.I18n
 
-      def t(key, locale) do
-        I18n.translate!(key, locale)
+      def t(key, parameters \\ %{}, locale) do
+        I18n.translate!(key, parameters, locale)
       end
     end
   end
