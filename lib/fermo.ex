@@ -22,6 +22,8 @@ defmodule Fermo do
       Module.register_attribute __MODULE__, :config, persist: true
       @config unquote(opts)
 
+      :yamerl_app.set_param(:node_mods, [])
+
       use Fermo.Helpers.Assets
       use Fermo.Helpers.Links
       use Fermo.Helpers.I18n
