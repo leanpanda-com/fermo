@@ -337,9 +337,6 @@ defmodule Fermo do
   end
 
   defp parse_template(template) do
-    pathname = full_template_path(template)
-    IO.puts "parsing template: #{pathname}"
-
     [frontmatter, body] =
       File.read(full_template_path(template))
       |> split_template
