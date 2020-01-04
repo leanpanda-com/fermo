@@ -336,6 +336,31 @@ defmodule Fermo do
     end
   end
 
+  defp parse_template(template) do
+    pathname = full_template_path(template)
+    IO.puts "parsing template: #{pathname}"
+
+    [frontmatter, body] =
+      File.read(full_template_path(template))
+      |> split_template
+
+    {content_fors, removed, body} = extract_content_for_blocks(template, body)
+
+    # Strip leading space, or EEx compilation fails
+    body = String.replace(body, ~r/^[\s\r\n]*/, "")
+
+    {frontmatter, content_fors, removed, body}
+  end
+
+  defp extract_content_for_blocks(template, body) do
+    [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
+    {content_fors, removed, cleaned_parts} = Enum.reduce(parts, {[], 0, []}, fn (part, {cfs, removed, ps}) ->
+      {new_cf, lines, cleaned} = extract_content_for_block(template, part)
+      {cfs ++ [new_cf], removed + lines, ps ++ cleaned}
+    end)
+    {content_fors, removed, Enum.join([head] ++ cleaned_parts, "\n")}
+  end
+
   defp extract_content_for_block(template, part) do
     # Extract the content_for block (until the next line that isn't indented)
     # TODO: the block should not stop at the first non-indented **empty** line,
@@ -368,31 +393,6 @@ defmodule Fermo do
   end
 
   defp count_lines(text), do: length(String.split(text, "\n"))
-
-  defp extract_content_for_blocks(template, body) do
-    [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
-    {content_fors, removed, cleaned_parts} = Enum.reduce(parts, {[], 0, []}, fn (part, {cfs, removed, ps}) ->
-      {new_cf, lines, cleaned} = extract_content_for_block(template, part)
-      {cfs ++ [new_cf], removed + lines, ps ++ cleaned}
-    end)
-    {content_fors, removed, Enum.join([head] ++ cleaned_parts, "\n")}
-  end
-
-  defp parse_template(template) do
-    pathname = full_template_path(template)
-    IO.puts "parsing template: #{pathname}"
-
-    [frontmatter, body] =
-      File.read(full_template_path(template))
-      |> split_template
-
-    {content_fors, removed, body} = extract_content_for_blocks(template, body)
-
-    # Strip leading space, or EEx compilation fails
-    body = String.replace(body, ~r/^[\s\r\n]*/, "")
-
-    {frontmatter, content_fors, removed, body}
-  end
 
   defp split_template({:ok, source = "---\n" <> _rest}) do
     [_, frontmatter_yaml, body] = String.split(source, "---\n")
