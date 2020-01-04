@@ -111,13 +111,13 @@ defmodule Fermo do
   end
 
   def deftemplate(template) do
-    {frontmatter, content_fors, body} = parse_template(template)
+    {frontmatter, content_fors, removed, body} = parse_template(template)
 
     eex_source = precompile_slim(body, template)
 
     full_template_path = Fermo.full_template_path(template)
     defs = quote bind_quoted: binding(), file: full_template_path do
-      compiled = EEx.compile_string(eex_source)
+      compiled = EEx.compile_string(eex_source, line: removed, file: full_template_path)
       escaped_frontmatter = Macro.escape(frontmatter)
       args = [Macro.var(:params, nil), Macro.var(:context, nil)]
       name = String.to_atom(template)
@@ -327,6 +327,7 @@ defmodule Fermo do
     # TODO: the block should not stop at the first non-indented **empty** line,
     #   it should continue to the first non-indented line with text
     [key | [block | cleaned]] = Regex.run(~r/^(?:[\(\s]\:)([^\n\)]+)\)?\n((?:\s{2}[^\n]+\n)+)(.*)/s, part, capture: :all_but_first)
+    lines = count_lines(block) + 1
     # Strip leading blank lines
     block = String.replace(block, ~r/^[\s\r\n]*/, "", global: false)
     # Strip indentation
@@ -349,16 +350,18 @@ defmodule Fermo do
       end
     end
 
-    {cf_def, cleaned}
+    {cf_def, lines, cleaned}
   end
+
+  defp count_lines(text), do: length(String.split(text, "\n"))
 
   defp extract_content_for_blocks(template, body) do
     [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
-    {content_fors, cleaned_parts} = Enum.reduce(parts, {[], []}, fn (part, {cfs, ps}) ->
-      {new_cf, cleaned} = extract_content_for_block(template, part)
-      {cfs ++ [new_cf], ps ++ cleaned}
+    {content_fors, removed, cleaned_parts} = Enum.reduce(parts, {[], 0, []}, fn (part, {cfs, removed, ps}) ->
+      {new_cf, lines, cleaned} = extract_content_for_block(template, part)
+      {cfs ++ [new_cf], removed + lines, ps ++ cleaned}
     end)
-    {content_fors, Enum.join([head] ++ cleaned_parts, "\n")}
+    {content_fors, removed, Enum.join([head] ++ cleaned_parts, "\n")}
   end
 
   defp parse_template(template) do
@@ -369,12 +372,12 @@ defmodule Fermo do
       File.read(full_template_path(template))
       |> split_template
 
-    {content_fors, body} = extract_content_for_blocks(template, body)
+    {content_fors, removed, body} = extract_content_for_blocks(template, body)
 
     # Strip leading space, or EEx compilation fails
     body = String.replace(body, ~r/^[\s\r\n]*/, "")
 
-    {frontmatter, content_fors, body}
+    {frontmatter, content_fors, removed, body}
   end
 
   defp split_template({:ok, source = "---\n" <> _rest}) do
