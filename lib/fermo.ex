@@ -116,6 +116,20 @@ defmodule Fermo do
     eex_source = precompile_slim(body, template)
 
     full_template_path = Fermo.full_template_path(template)
+
+    # We do a first compilation here so we can trap errors
+    # and give a better message
+    try do
+      EEx.compile_string(eex_source, line: removed, file: full_template_path)
+    rescue
+      e in TokenMissingError ->
+        message = """
+        Template compilation error: #{e.description}
+        Path: '#{full_template_path}'
+        """
+        raise FermoError, message: message
+    end
+
     defs = quote bind_quoted: binding(), file: full_template_path do
       compiled = EEx.compile_string(eex_source, line: removed, file: full_template_path)
       escaped_frontmatter = Macro.escape(frontmatter)
