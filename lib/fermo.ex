@@ -166,10 +166,12 @@ defmodule Fermo do
   end
 
   def render_template(module, template, page, params \\ %{}) do
+    env = System.get_env()
     context = %{
       module: module,
       template: template,
-      page: page
+      page: page,
+      env: env
     }
     name = String.to_atom(template)
     apply(module, name, [params, context])

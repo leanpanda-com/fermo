@@ -73,6 +73,7 @@ Top level pages are called with the following parameters:
 
 ### Context
 
+* `:env` - the application environment,
 * `:module` - the module which called `Fermo.build/0`,
 * `:template` - the top-level page or partial template pathname, with path
   relative to the source root,
