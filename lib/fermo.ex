@@ -98,6 +98,7 @@ defmodule Fermo do
         ""
       end
     end
+
     defs ++ [get_config]
   end
 
@@ -133,6 +134,7 @@ defmodule Fermo do
         unquote(compiled)
       end
     end
+
     [defs] ++ content_fors
   end
 
