@@ -29,8 +29,14 @@ defmodule Fermo do
       use Fermo.Helpers.I18n
       use Fermo.Helpers.Text
 
-      defmacro partial(name, params \\ nil, opts \\ nil) do
-        template = "partials/_#{name}.html.slim"
+      defmacro partial(path, params \\ nil, opts \\ nil) do
+        dirname = Path.dirname(path)
+        basename = Path.basename(path)
+        template = if dirname == "." do
+          "_#{basename}.html.slim"
+        else
+          Path.join(dirname, "_#{basename}.html.slim")
+        end
         quote do
           context = var!(context)
           page = context[:page]
