@@ -111,7 +111,7 @@ defmodule Fermo do
   end
 
   def deftemplate(template) do
-    [frontmatter, body, content_fors] = parse_template(template)
+    {frontmatter, content_fors, body} = parse_template(template)
 
     eex_source = precompile_slim(body, template)
 
@@ -349,30 +349,32 @@ defmodule Fermo do
       end
     end
 
-    [cf_def, cleaned]
+    {cf_def, cleaned}
   end
 
   defp extract_content_for_blocks(template, body) do
     [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
     {content_fors, cleaned_parts} = Enum.reduce(parts, {[], []}, fn (part, {cfs, ps}) ->
-      [new_cf, cleaned] = extract_content_for_block(template, part)
+      {new_cf, cleaned} = extract_content_for_block(template, part)
       {cfs ++ [new_cf], ps ++ cleaned}
     end)
-    [content_fors, Enum.join([head] ++ cleaned_parts, "\n")]
+    {content_fors, Enum.join([head] ++ cleaned_parts, "\n")}
   end
 
   defp parse_template(template) do
     pathname = full_template_path(template)
     IO.puts "parsing template: #{pathname}"
-    [frontmatter, body] = File.read(full_template_path(template))
-    |> split_template
 
-    [content_fors, body] = extract_content_for_blocks(template, body)
+    [frontmatter, body] =
+      File.read(full_template_path(template))
+      |> split_template
+
+    {content_fors, body} = extract_content_for_blocks(template, body)
 
     # Strip leading space, or EEx compilation fails
     body = String.replace(body, ~r/^[\s\r\n]*/, "")
 
-    [frontmatter, body, content_fors]
+    {frontmatter, content_fors, body}
   end
 
   defp split_template({:ok, source = "---\n" <> _rest}) do
