@@ -13,7 +13,7 @@ defmodule Fermo.MixProject do
       deps: deps(),
       docs: [
         main: "Fermo",
-        extras: ["README.md", "FermoSLIM.md"]
+        extras: ["README.md", "MiddlemanToFermo.md"]
       ]
     ]
   end
