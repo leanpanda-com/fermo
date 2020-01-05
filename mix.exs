@@ -36,7 +36,7 @@ defmodule Fermo.MixProject do
     %{
       licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/joeyates/fermo.git"
+        "GitLab" => "https://gitlab.com/joeyates/fermo.git"
       },
       maintainers: ["Joe Yates"]
     }
