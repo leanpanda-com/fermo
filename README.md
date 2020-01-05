@@ -1,21 +1,17 @@
 # Fermo
 
-**TODO: Add description**
+# Approach
 
-## Installation
+When a Fermo project is compiles, all pages (single pages, proxy templates
+and partials) are located.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `fermo` to your list of dependencies in `mix.exs`:
+Pages which have a special function (e.g. templates and partials) are filtered
+out and remaining pages are queued for conversion to HTML.
 
-```elixir
-def deps do
-  [
-    {:fermo, "~> 0.1.0"}
-  ]
-end
-```
+# Defaults
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/fermo](https://hexdocs.pm/fermo).
+Fermo was build to mimic the behaviour of Middleman, so it's defaults
+tend to be the same its progenitor.
 
+A number of helper methods are provided (e.g. `javascript_include_tag`) to
+allow easy porting of Middleman projects.
