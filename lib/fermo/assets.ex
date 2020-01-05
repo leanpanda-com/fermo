@@ -23,7 +23,7 @@ defmodule Fermo.Assets do
   defp handle_build_result({_output, 0}, config) do
     manifest = "build/manifest.json"
     |> File.read!
-    |> JSX.decode!
+    |> Jason.decode!
     GenServer.call(:assets, {:put, manifest})
     put_in(config, [:stats, :assets_build_started], Time.utc_now)
   end
