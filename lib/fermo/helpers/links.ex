@@ -15,10 +15,21 @@ defmodule Fermo.Helpers.Links do
         link_to(content, href, attributes)
       end
       def link_to(text, href, attributes) when is_binary(text) and is_binary(href) and is_list(attributes) do
-        attribs = Enum.map(attributes, fn ({k, v}) ->
-          "#{k}=\"#{v}\""
-        end)
+        attribs = to_attributes(attributes)
         "<a href=\"#{href}\" #{Enum.join(attribs, " ")}>#{text}</a>"
+      end
+
+      defp to_attributes(attributes) do
+        Enum.map(attributes, &(to_attribute(&1)))
+      end
+
+      defp to_attribute({k, v}) when is_binary(v) do
+        "#{k}=\"#{v}\""
+      end
+      defp to_attribute({k, v}) when is_map(v) do
+        Enum.reduce(v, [], fn {k2, v2}, acc ->
+          "#{k}-#{k2}=\"#{v2}\""
+        end)
       end
 
       def mail_to(email, caption \\ nil, _mail_options \\ %{}) do
