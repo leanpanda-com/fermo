@@ -30,6 +30,8 @@ defmodule MyProject do
   }
 
   def build do
+    config = config()
+
     Fermo.build(config)
   end
 end
@@ -59,7 +61,15 @@ allow easy porting of Middleman projects.
 
 # Templates
 
-Currently, fermo only supports SLIM templates for HTML.
+Currently, Fermo only supports SLIM templates for HTML.
+
+## SLIM in Elixir
+
+There are some differences from other SLIM dialects:
+
+* `if` and `Enum.map` should be preceded by `=`.
+
+See the documentation here: ....
 
 ## Parameters
 
@@ -88,3 +98,5 @@ Information about the top-level page.
 
 Partials are also called with the same 2 parameters, but the values in `:page`
 are those of the top-level page, not the partial itself.
+
+# Assets
