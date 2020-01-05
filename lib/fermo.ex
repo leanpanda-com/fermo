@@ -46,7 +46,7 @@ defmodule Fermo do
           p = if content do
             put_in(unquote(params) || %{}, [:content], content)
           else
-            unquote(params)
+            unquote(params) || %{}
           end
           Fermo.render_template(__MODULE__, unquote(template), page, p)
         end
