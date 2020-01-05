@@ -11,7 +11,10 @@ defmodule Fermo.MixProject do
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: []
+      docs: [
+        main: "Fermo",
+        extras: ["README.md", "FermoSLIM.md"]
+      ]
     ]
   end
 

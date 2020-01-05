@@ -63,13 +63,9 @@ allow easy porting of Middleman projects.
 
 Currently, Fermo only supports SLIM templates for HTML.
 
-## SLIM in Elixir
+## Fermo and SLIM
 
-There are some differences from other SLIM dialects:
-
-* `if` and `Enum.map` should be preceded by `=`.
-
-See the documentation here: ....
+See [FermoSLIM]
 
 ## Parameters
 
