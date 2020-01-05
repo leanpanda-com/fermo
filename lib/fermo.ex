@@ -85,7 +85,7 @@ defmodule Fermo do
     config = Fermo.Localizable.add(config)
     config = Fermo.Simple.add(config)
 
-    templates = File.cd!("priv/source", fn ->
+    templates = File.cd!(@source_path, fn ->
       Path.wildcard("**/*.slim")
     end)
     defs = Enum.map(templates, fn (path) ->
