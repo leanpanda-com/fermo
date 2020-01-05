@@ -2,6 +2,10 @@ defmodule Fermo do
   require EEx
   require Slime
 
+  def start(_start_type, _args \\ []) do
+    I18n.start_link()
+  end
+
   @doc false
   defmacro __using__(opts \\ %{}) do
     quote do
@@ -24,6 +28,14 @@ defmodule Fermo do
         template = Path.join(partials_path(), "_#{name}.html.slim")
         name = String.to_atom(template)
         apply(__MODULE__, name, [params])
+      end
+
+      def current_locale do
+        I18n.get_locale!()
+      end
+
+      def t(key) do
+        I18n.translate!(key)
       end
     end
   end
@@ -67,8 +79,15 @@ defmodule Fermo do
     defs ++ [get_config]
   end
 
-  defp full_template_path(path) do
-    Path.join(source_path(), path)
+  def load_translations(config) do
+    default_locale = hd(config[:i18n])
+    files = Path.wildcard("priv/locales/**/*.yml")
+    translations = Enum.reduce(files, %{}, fn (file, translations) ->
+      content = YamlElixir.read_from_file(file)
+      atom_keys = AtomMap.atom_map(content)
+      Map.merge(translations, atom_keys)
+    end)
+    I18n.put(translations, default_locale)
   end
 
   defp source_path, do: "priv/source"
@@ -119,6 +138,8 @@ defmodule Fermo do
   end
 
   def do_build(module, config) do
+    {:ok} = Fermo.load_translations(config)
+
     pages = config[:pages]
     pages_with_body = Enum.map(pages, fn (%{template: template, params: params} = page) ->
       body = build_page(module, template, params)
@@ -151,12 +172,16 @@ defmodule Fermo do
     File.read(full_template_path(path)) |> split_template
   end
 
-  def split_template({:ok, source = "---\n" <> _rest}) do
+  defp split_template({:ok, source = "---\n" <> _rest}) do
     [_, frontmatter_yaml, body] = String.split(source, "---\n")
     frontmatter = YamlElixir.read_from_string(frontmatter_yaml)
     [Macro.escape(frontmatter, unquote: true), body]
   end
-  def split_template({:ok, body}) do
+  defp split_template({:ok, body}) do
     [Macro.escape(%{}, unquote: true), body]
+  end
+
+  defp full_template_path(path) do
+    Path.join(source_path(), path)
   end
 end
