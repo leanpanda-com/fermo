@@ -27,8 +27,10 @@ defmodule Fermo.MixProject do
 
   defp deps do
     [
+      {:deep_merge, "~> 1.0"},
       {:ex_doc, "~> 0.19", only: :dev},
       {:exjsx, "~> 3.2"},
+      {:fermo_helpers, "~> 0.2.1"},
       {:morphix, "~> 0.0.7"},
       {:slime, "~> 1.0"},
       {:yaml_elixir, "~> 1.3.0"}

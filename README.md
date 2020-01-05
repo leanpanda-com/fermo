@@ -93,6 +93,25 @@ Information about the top-level page.
 Partials are also called with the same 2 parameters, but the values in `:page`
 are those of the top-level page, not the partial itself.
 
+# Helpers
+
+## FermoHelpers.DateTime
+
+* `current_datetime/1`
+* `datetime_to_rfc2822/1`
+
+If you want to use `current_datetime/1`, you need to include
+the following dependency:
+
+```elixir
+{:tzdata, "~> 1.0"}
+```
+and add a config option
+
+```
+config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
+```
+
 # Middleman to Fermo
 
 Fermo was build to mimic the behaviour of Middleman, so it's defaults

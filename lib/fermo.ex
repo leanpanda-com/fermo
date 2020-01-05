@@ -28,6 +28,7 @@ defmodule Fermo do
       use Fermo.Helpers.Links
       use Fermo.Helpers.I18n
       use Fermo.Helpers.Text
+      import FermoHelpers.DateTime
 
       defmacro partial(path, params \\ nil, opts \\ nil) do
         dirname = Path.dirname(path)
