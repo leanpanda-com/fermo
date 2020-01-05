@@ -2,17 +2,21 @@
 
 # Usage
 
-Create an Elixir project.
+Create an Elixir project:
+
+```sh
+$ mix new myProject
+```
 
 Add the dependency to `mix.exs`:
 
 ```elixir
-{:fermo, "~> 0.1.5"}
+{:fermo, "~> 0.2.1"}
 ```
 
 Get dependencies:
 
-```shell
+```sh
 $ mix deps.get
 ```
 
@@ -39,17 +43,18 @@ end
 
 Build the project:
 
-```shell
+```sh
 $ mix fermo.build
 ```
 
 # Approach
 
-When a Fermo project is compiled, all pages (single pages, proxy templates
-and partials) are located.
+When a Fermo project is compiled, all pages (single pages, templates
+and partials) are located. Pages which have a special function
+(e.g. templates and partials) are filtered out and remaining pages
+are queued for conversion to HTML.
 
-Pages which have a special function (e.g. templates and partials) are filtered
-out and remaining pages are queued for conversion to HTML.
+Dynamic, data-based pages are created with the `page` method.
 
 # Defaults
 
@@ -65,13 +70,13 @@ Currently, Fermo only supports SLIM templates for HTML.
 
 ## Fermo and SLIM
 
-See [FermoSLIM]
+See [here](FermoSLIM.md).
 
 ## Parameters
 
 Top level pages are called with the following parameters:
 
-* `params` - the parameters passed to the template or partial,
+* `params` - the parameters passed directly to the template or partial,
 * `context` - hash of contextual information.
 
 ### Context
@@ -96,3 +101,34 @@ Partials are also called with the same 2 parameters, but the values in `:page`
 are those of the top-level page, not the partial itself.
 
 # Assets
+
+Webpack-based assets can be integrated with the Fermo build.
+
+Your config should product a manifest as `build/manifest.json`:
+
+```js
+const ManifestPlugin = require('webpack-manifest-plugin')
+
+module.exports = {
+  ..
+  output: {
+    path: __dirname + '/build',
+    ...
+  },
+  ...
+  plugins: [
+    ...
+    new ManifestPlugin()
+  ]
+}
+```
+
+Run the Webpack build:
+
+```elixir
+config = Fermo.Assets.build(config)
+```
+
+You can then use the helpers provided by `Fermo.Helpers.Assets`
+such as `javascript_include_tag` and you will pick up the
+correctly hashed filenames.
