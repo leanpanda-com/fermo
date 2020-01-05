@@ -32,7 +32,7 @@ defmodule Fermo.MixProject do
       {:fermo_helpers, "~> 0.2.1"},
       {:jason, "~> 1.1"},
       {:morphix, "~> 0.0.7"},
-      {:slime, "~> 1.0"},
+      {:slime, "1.0.0"},
       {:yaml_elixir, "~> 1.3.0"}
     ]
   end
