@@ -8,7 +8,7 @@ defmodule Fermo.MixProject do
       elixir: "~> 1.4",
       description: "A static site generator",
       package: package(),
-      build_embedded: Mix.env == :prod,
+      build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: [
