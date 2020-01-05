@@ -13,7 +13,7 @@ defmodule Fermo.Assets do
   end
 
   def start_link() do
-    GenServer.start_link(__MODULE__, [], name: :assets)
+    GenServer.start_link(__MODULE__, %{}, name: :assets)
   end
 
   def build(config) do
