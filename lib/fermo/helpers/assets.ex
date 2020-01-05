@@ -43,4 +43,3 @@ defmodule Fermo.Helpers.Assets do
     end
   end
 end
-
