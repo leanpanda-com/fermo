@@ -23,7 +23,7 @@ defmodule Fermo.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "~> 0.15.1", only: :dev},
+      {:ex_doc, "~> 0.19", only: :dev},
       {:exjsx, "~> 3.2"},
       {:morphix, "~> 0.0.7"},
       {:slime, "~> 1.0.0"},
