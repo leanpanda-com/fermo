@@ -1,4 +1,5 @@
 defmodule Mix.Fermo.Compiler do
+  import Fermo.Naming
   import Mix.Fermo.Paths
   alias Mix.Fermo.Compiler.Manifest
 
@@ -6,8 +7,16 @@ defmodule Mix.Fermo.Compiler do
     compilation_timestamp = compilation_timestamp()
     all_sources = all_sources()
     changed = changed_since(all_sources, Manifest.timestamp())
-    IO.puts "changed: #{inspect(changed, [pretty: true, width: 0])}"
+    Enum.each(changed, &compile_file/1)
     Manifest.write(all_sources, compilation_timestamp)
+  end
+
+  defp compile_file(file) do
+    module =
+      file
+      |> absolute_to_source()
+      |> source_path_to_module()
+    IO.puts "module: #{module}"
   end
 
   defp changed_since(paths, timestamp) do

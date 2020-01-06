@@ -7,4 +7,8 @@ defmodule Mix.Fermo.Paths do
   end
 
   def full_source_path, do: Path.join(app_path, @source_path)
+
+  def absolute_to_source(path) do
+    Path.relative_to(path, full_source_path())
+  end
 end
