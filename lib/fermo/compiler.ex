@@ -1,5 +1,6 @@
 defmodule Fermo.Compiler do
   @manifest_vsn 1
+  @source_path "priv/source"
 
   def run() do
     compilation_timestamp = compilation_timestamp()
@@ -15,8 +16,8 @@ defmodule Fermo.Compiler do
   defp all_paths do
     deps_path = Mix.Project.config[:deps_path]
     app_path = Path.dirname(deps_path)
-    source_path = Path.join(app_path, "priv/source")
-    Mix.Utils.extract_files([source_path], [:slim])
+    full_source_path = Path.join(app_path, @source_path)
+    Mix.Utils.extract_files([full_source_path], [:slim])
     |> MapSet.new()
   end
 
