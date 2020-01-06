@@ -1,0 +1,10 @@
+defmodule Mix.Fermo.Paths do
+  @source_path "priv/source"
+
+  def app_path do
+    deps_path = Mix.Project.config[:deps_path]
+    Path.dirname(deps_path)
+  end
+
+  def full_source_path, do: Path.join(app_path, @source_path)
+end

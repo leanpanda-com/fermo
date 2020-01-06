@@ -1,22 +1,21 @@
 defmodule Mix.Fermo.Compiler do
+  import Mix.Fermo.Paths
+
   @manifest_vsn 1
-  @source_path "priv/source"
 
   def run() do
     compilation_timestamp = compilation_timestamp()
-    changed = changed_since(all_paths(), manifest_timestamp())
+    all_sources = all_sources()
+    changed = changed_since(all_sources, manifest_timestamp())
     IO.puts "changed: #{inspect(changed, [pretty: true, width: 0])}"
-    write_manifest(all_paths, compilation_timestamp)
+    write_manifest(all_sources, compilation_timestamp)
   end
 
   defp changed_since(paths, timestamp) do
     Enum.filter(paths, &(Mix.Utils.last_modified(&1) > timestamp))
   end
 
-  defp all_paths do
-    deps_path = Mix.Project.config[:deps_path]
-    app_path = Path.dirname(deps_path)
-    full_source_path = Path.join(app_path, @source_path)
+  defp all_sources do
     Mix.Utils.extract_files([full_source_path], [:slim])
     |> MapSet.new()
   end
