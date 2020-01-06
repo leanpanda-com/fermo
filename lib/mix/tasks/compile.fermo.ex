@@ -7,6 +7,6 @@ defmodule Mix.Tasks.Compile.Fermo do
   Compile all templates that have changed since the last compile
   """
   def run(_args) do
-    Fermo.Compiler.run()
+    Mix.Fermo.Compiler.run()
   end
 end

@@ -1,4 +1,4 @@
-defmodule Fermo.Compiler do
+defmodule Mix.Fermo.Compiler do
   @manifest_vsn 1
   @source_path "priv/source"
 
