@@ -2,10 +2,6 @@ defmodule Fermo do
   require EEx
   require Slime
 
-  defmodule FermoError do
-    defexception [:message]
-  end
-
   @source_path "priv/source"
 
   def start(_start_type, _args \\ []) do
@@ -135,7 +131,7 @@ defmodule Fermo do
         Template compilation error: #{e.description}
         Path: '#{full_template_path}'
         """
-        raise FermoError, message: message
+        raise Fermo.Error, message: message
     end
 
     defs = quote bind_quoted: binding(), file: full_template_path do
@@ -342,7 +338,7 @@ defmodule Fermo do
 
         #{body}
         """
-        raise FermoError, message: message
+        raise Fermo.Error, message: message
     end
   end
 
