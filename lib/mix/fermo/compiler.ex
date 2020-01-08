@@ -4,6 +4,7 @@ defmodule Mix.Fermo.Compiler do
   alias Mix.Fermo.Compiler.Manifest
 
   def run() do
+    :yamerl_app.set_param(:node_mods, [])
     compilation_timestamp = compilation_timestamp()
     all_sources = all_sources()
     changed = changed_since(all_sources, Manifest.timestamp())
