@@ -281,7 +281,7 @@ defmodule Fermo do
     end
   end
 
-  defp inner_render_page(module, %{template: template, pathname: pathname} = page) do
+  defp inner_render_page(module, %{template: template} = page) do
     defaults_method = String.to_atom(template <> "-defaults")
     defaults = apply(module, defaults_method, [])
     layout = if Map.has_key?(defaults, "layout") do
