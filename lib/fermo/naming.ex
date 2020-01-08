@@ -5,6 +5,7 @@ defmodule Fermo.Naming do
       |> String.replace(~r/\.html\.slim$/, "")
       |> String.replace("/", ".")
     upper = Regex.replace(~r/(?:\b|\.)([a-z])/, base, &(String.upcase(&1)))
-    :"Elixir.Fermo.Template.#{upper}"
+    camel = Regex.replace(~r/_([a-z])/, upper, fn _, t -> String.upcase(t) end)
+    :"Elixir.Fermo.Template.#{camel}"
   end
 end
