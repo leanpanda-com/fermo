@@ -119,6 +119,15 @@ tend to be the same its progenitor.
 
 See [here](MiddlemanToFermo.md).
 
+# Fermo and DatoCMS
+
+## With the GraphQL client
+
+* single items: `fetch!(:foo, "{ bar }").bar`,
+* localized single items: `fetch_localized!(:foo, :en, "{ bar }")`,
+* collections: `fetch_all!(:allFoos, "{ bar }")`,
+* localized collections: `fetch_all_localzed!(:allFoos, :en, "{ bar }")`.
+
 # Assets
 
 Webpack-based assets can be integrated with the Fermo build.
