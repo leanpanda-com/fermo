@@ -3,9 +3,10 @@ defmodule Mix.Fermo.Compiler do
   import Mix.Fermo.Paths
   alias Mix.Fermo.Compiler.Manifest
 
-  def run() do
+  def run do
     :yamerl_app.set_param(:node_mods, [])
     compilation_timestamp = compilation_timestamp()
+    ensure_helpers_module()
     all_sources = all_sources()
     changed = changed_since(all_sources, Manifest.timestamp())
     Enum.each(changed, &compile_file/1)
@@ -42,10 +43,21 @@ defmodule Mix.Fermo.Compiler do
       name = String.to_atom(template)
 
       defmodule :"#{module}" do
+        require Fermo.Partial
+        import Fermo.Partial
+        use Fermo.Helpers.Assets
+        use Fermo.Helpers.Links
+        use Fermo.Helpers.I18n
+        use Fermo.Helpers.Text
+        import FermoHelpers.DateTime
+        import FermoHelpers.String
+        use Helpers
+
         # content_fors
 
-        def page_moods(_locale), do: []
-        def published_moods(_locale), do: []
+        def yield_content(_name) do
+          ""
+        end
 
         # Define a method with the frontmatter, so we can merge with
         # params when the template is evaluated
@@ -60,11 +72,11 @@ defmodule Mix.Fermo.Compiler do
         end
       end
     end
-    # foo = Macro.to_string(quoted_module)
-    # IO.puts "foo: #{foo}"
 
-    compiled_modules = Code.compile_quoted(quoted_module)
-    IO.puts "compiled_modules: #{inspect(compiled_modules, [pretty: true, width: 0])}"
+    [{module, bytecode} | _other] = Code.compile_quoted(quoted_module)
+    base = Mix.Project.compile_path()
+    module_path = Path.join(base, "#{module}.beam")
+    File.write!(module_path, bytecode, [:write])
   end
 
   defp precompile_slim(body, template, type \\ "template") do
@@ -158,4 +170,18 @@ defmodule Mix.Fermo.Compiler do
   end
 
   def compilation_timestamp, do: System.os_time(:second)
+
+  def helpers_module, do: :"Elixir.Helpers"
+
+  def ensure_helpers_module do
+    Code.ensure_loaded(helpers_module())
+    has_helpers = has_helpers?()
+    if !has_helpers do
+      Code.compile_string("defmodule #{helpers_module()} do; end")
+    end
+  end
+
+  def has_helpers? do
+    function_exported?(helpers_module(), :__info__, 1)
+  end
 end

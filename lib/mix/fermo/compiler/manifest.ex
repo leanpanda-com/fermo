@@ -22,7 +22,8 @@ defmodule Mix.Fermo.Compiler.Manifest do
     manifest_data =
       [@manifest_vsn | sources]
       |> :erlang.term_to_binary([:compressed])
-    File.write!(path(), manifest_data)
-    File.touch!(path(), timestamp)
+    path = path()
+    File.write!(path, manifest_data)
+    File.touch!(path, timestamp)
   end
 end

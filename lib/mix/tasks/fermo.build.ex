@@ -8,9 +8,7 @@ defmodule Mix.Tasks.Fermo.Build do
   """
   def run(_args) do
     Mix.Task.run "app.start"
-    project = Mix.Project.get()
-    [main | _rest] = Module.split(project)
-    module = String.to_existing_atom("Elixir.#{main}")
+    module = Mix.Fermo.Module.module!()
     {:ok, config} = module.build()
     stats = Map.get(config, :stats)
     if stats do
