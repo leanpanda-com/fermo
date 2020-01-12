@@ -19,14 +19,14 @@ defmodule Mix.Fermo.Compiler do
       |> absolute_to_source()
       |> source_path_to_module()
 
-    {frontmatter, content_fors, removed, body} = parse_template(template)
+    {frontmatter, content_fors, offset, body} = parse_template(template)
 
     eex_source = precompile_slim(body, template)
 
     # We do a first compilation here so we can trap errors
     # and give a better message
     try do
-      EEx.compile_string(eex_source, line: removed, file: template)
+      EEx.compile_string(eex_source, line: offset, file: template)
     rescue
       e in TokenMissingError ->
         message = """
@@ -36,15 +36,24 @@ defmodule Mix.Fermo.Compiler do
         raise Fermo.Error, message: message
     end
 
+    cfs_eex = Enum.map(content_fors, fn [key, block, offset] ->
+      eex = precompile_slim(block, template, "content_for(:#{key})")
+      [key, eex, offset]
+    end)
+
     quoted_module = quote bind_quoted: binding(), file: template do
-      compiled = EEx.compile_string(eex_source, line: removed, file: template)
-      escaped_frontmatter = Macro.escape(frontmatter)
-      args = [Macro.var(:params, nil), Macro.var(:context, nil)]
-      name = String.to_atom(template)
+      compiled = EEx.compile_string(eex_source, line: offset, file: template)
+
+      cfs_compiled = Enum.map(cfs_eex, fn [key, eex, offset] ->
+        cf_compiled = EEx.compile_string(eex, line: offset, file: template)
+        {key, cf_compiled}
+      end)
 
       defmodule :"#{module}" do
         require Fermo.Partial
         import Fermo.Partial
+        require Fermo.YieldContent
+        import Fermo.YieldContent
         use Fermo.Helpers.Assets
         use Fermo.Helpers.Links
         use Fermo.Helpers.I18n
@@ -53,18 +62,29 @@ defmodule Mix.Fermo.Compiler do
         import FermoHelpers.String
         use Helpers
 
-        # content_fors
+        Enum.map(cfs_compiled, fn {key, cf_compiled} ->
+          args = [:"#{key}", Macro.var(:params, nil), Macro.var(:context, nil)]
 
-        def yield_content(_name) do
+          def content_for(unquote_splicing(args)) do
+            _params = var!(params)
+            _context = var!(context)
+            unquote(cf_compiled)
+          end
+        end)
+
+        def content_for(key, params, context) do
           ""
         end
 
         # Define a method with the frontmatter, so we can merge with
         # params when the template is evaluated
+        escaped_frontmatter = Macro.escape(frontmatter)
+
         def defaults() do
           unquote(escaped_frontmatter)
         end
 
+        args = [Macro.var(:params, nil), Macro.var(:context, nil)]
         def call(unquote_splicing(args)) do
           _params = var!(params)
           _context = var!(context)
@@ -101,24 +121,24 @@ defmodule Mix.Fermo.Compiler do
       File.read(template)
       |> split_template
 
-    {content_fors, removed, body} = extract_content_for_blocks(template, body)
+    {content_fors, offset, body} = extract_content_for_blocks(body)
 
     # Strip leading space, or EEx compilation fails
     body = String.replace(body, ~r/^[\s\r\n]*/, "")
 
-    {frontmatter, content_fors, removed, body}
+    {frontmatter, content_fors, offset, body}
   end
 
-  defp extract_content_for_blocks(template, body) do
+  defp extract_content_for_blocks(body) do
     [head | parts] = String.split(body, ~r{(?<=\n|^)- content_for(?=(\s+\:\w+|\(\:\w+\))\n)})
-    {content_fors, removed, cleaned_parts} = Enum.reduce(parts, {[], 0, []}, fn (part, {cfs, removed, ps}) ->
-      {new_cf, lines, cleaned} = extract_content_for_block(template, part)
-      {cfs ++ [new_cf], removed + lines, ps ++ cleaned}
+    {content_fors, offset, cleaned_parts} = Enum.reduce(parts, {[], 0, []}, fn (part, {cfs, offset, ps}) ->
+      {new_cf, lines, cleaned} = extract_content_for_block(part, offset)
+      {cfs ++ [new_cf], offset + lines, ps ++ cleaned}
     end)
-    {content_fors, removed, Enum.join([head] ++ cleaned_parts, "\n")}
+    {content_fors, offset, Enum.join([head] ++ cleaned_parts, "\n")}
   end
 
-  defp extract_content_for_block(template, part) do
+  defp extract_content_for_block(part, offset) do
     # Extract the content_for block (until the next line that isn't indented)
     # TODO: the block should not stop at the first non-indented **empty** line,
     #   it should continue to the first non-indented line with text
@@ -129,24 +149,7 @@ defmodule Mix.Fermo.Compiler do
     # Strip indentation
     block = String.replace(block, ~r/^  /m, "")
 
-    eex_source = precompile_slim(block, template, "content_for block")
-
-    full_template_path = Fermo.full_template_path(template)
-    cf_def = quote bind_quoted: binding(), file: full_template_path do
-      compiled = EEx.compile_string(eex_source)
-      template_atom = String.to_atom(template)
-      name = String.to_atom(key)
-      args = [template_atom, name, Macro.var(:params, nil), Macro.var(:context, nil)]
-
-      # Define a method with the content_for block
-      def content_for(unquote_splicing(args)) do
-        _params = var!(params)
-        _context = var!(context)
-        unquote(compiled)
-      end
-    end
-
-    {cf_def, lines, cleaned}
+    {[key, block, offset], lines, cleaned}
   end
 
   defp count_lines(text), do: length(String.split(text, "\n"))
