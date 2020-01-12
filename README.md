@@ -2,25 +2,39 @@
 
 # Usage
 
-Create an Elixir project:
+1. Create an Elixir project:
 
 ```sh
 $ mix new myProject
 ```
 
-Add the dependency to `mix.exs`:
+2. Modify `mix.exs`
+
+Configure the compiler:
+
+```elixir
+  def project do
+    [
+      ...
+      compilers: Mix.compilers() ++ [:fermo],
+      ...
+    ]
+  end
+```
+
+Add the dependency:
 
 ```elixir
 {:fermo, "~> 0.2.1"}
 ```
 
-Get dependencies:
+3. Get dependencies:
 
 ```sh
 $ mix deps.get
 ```
 
-Create `lib/{{project name}}.ex`:
+4. Create `lib/{{project name}}.ex`:
 
 ```elixir
 defmodule MyProject do
@@ -41,7 +55,7 @@ defmodule MyProject do
 end
 ```
 
-Build the project:
+5. Build the project:
 
 ```sh
 $ mix fermo.build
