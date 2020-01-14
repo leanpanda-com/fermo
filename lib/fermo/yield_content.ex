@@ -12,8 +12,7 @@ defmodule Fermo.YieldContent do
         template
         |> Mix.Fermo.Paths.absolute_to_source()
         |> Fermo.Naming.source_path_to_module()
-      foo = apply(module, :content_for, [:"#{unquote(key)}", params, context])
-      "#{template} #{module} >>>>#{foo}<<<<"
+      apply(module, :content_for, [:"#{unquote(key)}", params, context])
     end
   end
 end
