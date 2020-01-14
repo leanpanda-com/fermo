@@ -123,10 +123,3 @@ Middleman projects:
 
 If an API has a JSON Schema, use `json_hyperschema_client_builder`,
 which will generate a whole Elixir API library for you.
-
-# Middleman and DatoCMS
-
-## With the GraphQL client
-
-* `dato.foo.bar` -> `fetch!(:foo, "{ bar }").bar`,
-* `dato.foos` -> `fetch_all!(:allFoos, "{ bar }")`.

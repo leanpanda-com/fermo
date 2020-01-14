@@ -2,25 +2,39 @@
 
 # Usage
 
-Create an Elixir project:
+1. Create an Elixir project:
 
 ```sh
 $ mix new myProject
 ```
 
-Add the dependency to `mix.exs`:
+2. Modify `mix.exs`
+
+Configure the compiler:
+
+```elixir
+  def project do
+    [
+      ...
+      compilers: Mix.compilers() ++ [:fermo],
+      ...
+    ]
+  end
+```
+
+Add the dependency:
 
 ```elixir
 {:fermo, "~> 0.2.1"}
 ```
 
-Get dependencies:
+3. Get dependencies:
 
 ```sh
 $ mix deps.get
 ```
 
-Create `lib/{{project name}}.ex`:
+4. Create `lib/{{project name}}.ex`:
 
 ```elixir
 defmodule MyProject do
@@ -41,7 +55,7 @@ defmodule MyProject do
 end
 ```
 
-Build the project:
+5. Build the project:
 
 ```sh
 $ mix fermo.build
@@ -108,7 +122,7 @@ the following dependency:
 ```
 and add a config option
 
-```
+```elixir
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 ```
 
@@ -118,6 +132,15 @@ Fermo was build to mimic the behaviour of Middleman, so it's defaults
 tend to be the same its progenitor.
 
 See [here](MiddlemanToFermo.md).
+
+# Fermo and DatoCMS
+
+## With the GraphQL client
+
+* single items: `fetch!(:foo, "{ bar }").bar`,
+* localized single items: `fetch_localized!(:foo, :en, "{ bar }")`,
+* collections: `fetch_all!(:allFoos, "{ bar }")`,
+* localized collections: `fetch_all_localzed!(:allFoos, :en, "{ bar }")`.
 
 # Assets
 
