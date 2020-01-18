@@ -15,10 +15,10 @@ defmodule I18n do
   end
 
   def translate(key, parameters \\ %{}, locale)
-  def translate(key, parameters, locale) when is_list(key) do
+  def translate(key, parameters, locale) when is_list(key) and is_atom(locale) do
     translate(to_string(key), parameters, locale)
   end
-  def translate(key, parameters, locale) do
+  def translate(key, parameters, locale) when is_atom(locale) do
     GenServer.call(:i18n, {:translate, key, parameters, locale})
   end
 
@@ -27,8 +27,9 @@ defmodule I18n do
     translation
   end
 
-  def t(key, locale) do
-    translate!(key, locale)
+  def t(key, parameters \\ %{}, locale)
+  def t(key, parameters, locale) when is_binary(key) and is_map(parameters) and is_atom(locale) do
+    translate!(key, parameters, locale)
   end
 
   def handle_call({:put, state}, _from, _state) do
