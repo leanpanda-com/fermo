@@ -228,7 +228,7 @@ defmodule Fermo do
 
   defp build_layout_with_content(layout, content, page) do
     module = module_for_template(layout)
-    layout_params = %{content: content}
+    layout_params = Map.merge(page.params, %{content: content})
     render_template(module, layout, page, layout_params)
   end
 
