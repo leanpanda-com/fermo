@@ -10,7 +10,7 @@ defmodule Fermo.Helpers.I18n do
     end
   end
 
-  def load!(config) do
+  def load! do
     files = Path.wildcard("priv/locales/**/*.yml")
     translations = Enum.reduce(files, %{}, fn (file, translations) ->
       content = YamlElixir.read_from_file(file)

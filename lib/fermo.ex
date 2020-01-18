@@ -102,7 +102,7 @@ defmodule Fermo do
   end
 
   def build(config) do
-    Fermo.Helpers.I18n.load!(config)
+    Fermo.Helpers.I18n.load!()
 
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)
