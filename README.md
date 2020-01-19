@@ -61,18 +61,23 @@ end
 $ mix fermo.build
 ```
 
-# Approach
+# Capabilities
 
-When a Fermo project is compiled, all pages (single pages, templates
-and partials) are located. Pages which have a special function
-(e.g. templates and partials) are filtered out and remaining pages
-are queued for conversion to HTML.
+* build your projects fast, using all available cores,
+* handle Middleman-like config-time defined pages (see below),
 
-Dynamic, data-based pages are created with the `page` method.
+# Config-time Pages
 
-# Defaults
+Most static site generators build one webpage for every source page
+(e.g. Hugo).
 
-A number of helper methods are provided (e.g. `javascript_include_tag`).
+Middleman provides the very powerful but strangely named `proxy`,
+which allows you to produce many pages from one template.
+So, if you have a local JSON of YAML file, or even better an online
+CMS, as a source, you can build a page for each of your items
+without having to commit the to your Git repo.
+
+In Fermo, dynamic, data-based pages are created with the `page` method.
 
 # Templates
 
@@ -108,38 +113,27 @@ are those of the top-level page, not the partial itself.
 
 # Helpers
 
-## FermoHelpers.DateTime
+Helpers related to the asset pipeline are provided directly by
+Fermo - see below.
 
-* `current_datetime/1`
-* `datetime_to_rfc2822/1`
+Fermo also provides various helpers via the [fermo_helpers] library.
 
-If you want to use `current_datetime/1`, you need to include
+## Timezone Information
+
+Note: If you want to use `current_datetime/1`, you need to include
 the following dependency:
 
 ```elixir
 {:tzdata, "~> 1.0"}
 ```
+
 and add a config option
 
 ```elixir
 config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 ```
 
-# Middleman to Fermo
-
-Fermo was build to mimic the behaviour of Middleman, so it's defaults
-tend to be the same its progenitor.
-
-See [here](MiddlemanToFermo.md).
-
-# Fermo and DatoCMS
-
-## With the GraphQL client
-
-* single items: `fetch!(:foo, "{ bar }").bar`,
-* localized single items: `fetch_localized!(:foo, :en, "{ bar }")`,
-* collections: `fetch_all!(:allFoos, "{ bar }")`,
-* localized collections: `fetch_all_localzed!(:allFoos, :en, "{ bar }")`.
+[fermo_helpers]: https://hexdocs.pm/fermo_helpers/FermoHelpers.html
 
 # Assets
 
@@ -170,6 +164,24 @@ Run the Webpack build:
 config = Fermo.Assets.build(config)
 ```
 
+## Asset Helpers
+
 You can then use the helpers provided by `Fermo.Helpers.Assets`
 such as `javascript_include_tag` and you will pick up the
 correctly hashed filenames.
+
+# Middleman to Fermo
+
+Fermo was created as an improvement on Middleman, so it's defaults
+tend to be the same its progenitor.
+
+See [here](MiddlemanToFermo.md).
+
+# Fermo and DatoCMS
+
+## With the GraphQL client
+
+* single items: `fetch!(:foo, "{ bar }").bar`,
+* localized single items: `fetch_localized!(:foo, :en, "{ bar }")`,
+* collections: `fetch_all!(:allFoos, "{ bar }")`,
+* localized collections: `fetch_all_localized!(:allFoos, :en, "{ bar }")`.
