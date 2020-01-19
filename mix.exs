@@ -4,7 +4,7 @@ defmodule Fermo.MixProject do
   def project do
     [
       app: :fermo,
-      version: "0.4.0",
+      version: "0.5.0",
       elixir: "~> 1.4",
       description: "A static site generator",
       package: package(),
@@ -29,7 +29,7 @@ defmodule Fermo.MixProject do
     [
       {:deep_merge, "~> 1.0"},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:fermo_helpers, "~> 0.3.0"},
+      {:fermo_helpers, "~> 0.5.0"},
       {:jason, "~> 1.1"},
       {:morphix, "~> 0.0.7"},
       {:slime, "1.0.0"},
