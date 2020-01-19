@@ -36,7 +36,8 @@ defmodule I18n do
     {:reply, {:ok}, state}
   end
   def handle_call({:translate, key, parameters, locale}, _from, {translations} = state) do
-    translation = substitute(translations[locale][key], parameters)
+    translated = translations[locale][key]
+    translation = substitute(translated, parameters)
     {:reply, {:ok, translation}, state}
   end
 
@@ -63,7 +64,9 @@ defmodule I18n do
     {keys, value}
   end
 
-  defp substitute(translation, %{}), do: translation
+  defp substitute(translation, parameters) when parameters == %{} do
+    translation
+  end
   defp substitute(translation, parameters) do
     Regex.replace(
       ~r/%\{([^}]+)\}/,
