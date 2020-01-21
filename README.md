@@ -40,6 +40,7 @@ $ mix fermo.build
 
 # Project Structure
 
+```
 +-- build             - The built site
 +-- lib
 |   +-- my_project.ex - See [Configuration](#configuration)
@@ -58,6 +59,7 @@ $ mix fermo.build
         +-- static
         +-- stylesheets
         +-- templates
+```
 
 # Mix Configuration
 
@@ -269,7 +271,7 @@ correctly hashed filenames.
 # Localization
 
 If you pass an `:i18n` key with a list of locales to Fermo,
-your locale files will be loaded at build time end
+your locale files will be loaded at build time and
 files under `localizable` will be built for each locale.
 
 ```elixir
@@ -285,6 +287,7 @@ defmodule MyProject do
 
   ...
 end
+```
 
 # Middleman to Fermo
 
