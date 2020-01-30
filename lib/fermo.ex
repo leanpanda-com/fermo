@@ -140,7 +140,6 @@ defmodule Fermo do
 
     config
     |> put_in([:stats, :pages_built], Time.utc_now)
-    |> put_in([:pages], built)
   end
 
   defp render_page(page) do
