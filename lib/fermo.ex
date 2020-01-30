@@ -109,7 +109,9 @@ defmodule Fermo do
 
     copy_statics(config)
 
-    build_pages(config)
+    config = build_pages(config)
+
+    {:ok, config}
   end
 
   defp copy_statics(config) do
