@@ -11,6 +11,10 @@ defmodule Fermo.Helpers.Links do
         "<a href=\"#{href}\">#{text}</a>"
       end
 
+      def link_to(text, nil, attributes) when is_binary(text) and is_list(attributes) do
+        attribs = to_attributes(attributes)
+        "<a #{Enum.join(attribs, " ")}>#{text}</a>"
+      end
       def link_to(href, attributes, [do: content] = other) when is_binary(href) and is_list(attributes) do
         link_to(content, href, attributes)
       end
