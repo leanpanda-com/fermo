@@ -4,7 +4,7 @@ defmodule Fermo.MixProject do
   def project do
     [
       app: :fermo,
-      version: "0.6.0",
+      version: "0.6.1",
       elixir: "~> 1.4",
       description: "A static site generator",
       package: package(),

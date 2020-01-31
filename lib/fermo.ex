@@ -202,7 +202,7 @@ defmodule Fermo do
   defp copy_file(source, destination) do
     path = Path.dirname(destination)
     File.mkdir_p(path)
-    File.cp(source, destination)
+    {:ok, _files} = File.cp_r(source, destination)
   end
 
   defp save_file(pathname, body) do
