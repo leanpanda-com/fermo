@@ -148,6 +148,8 @@ defmodule Mix.Fermo.Compiler do
     block = String.replace(block, ~r/^[\s\r\n]*/, "", global: false)
     # Strip indentation
     block = String.replace(block, ~r/^  /m, "")
+    # Strip newlines at end
+    block = String.replace(block, ~r/\n+\z/, "")
 
     {[key, block, offset], lines, cleaned}
   end

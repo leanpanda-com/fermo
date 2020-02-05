@@ -138,7 +138,8 @@ defmodule Fermo do
         final_target = if target_override == "" do
           target
         else
-          target_override
+          # Avoid extra whitespace introduced by templating
+          String.replace(target_override, ~r/\n/, "")
         end
         pathname = Path.join(build_path, final_target)
         page = put_in(page, [:pathname], pathname)
