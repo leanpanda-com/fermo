@@ -130,8 +130,17 @@ defmodule Fermo do
 
     built = Task.async_stream(
       config.pages,
-      fn %{target: target} = page ->
-        pathname = Path.join(build_path, target)
+      fn %{template: template, target: target} = page ->
+        module = module_for_template(template)
+        context = build_context(module, template, page)
+        params = params_for(module, page)
+        target_override = apply(module, :content_for, [:path, params, context])
+        final_target = if target_override == "" do
+          target
+        else
+          target_override
+        end
+        pathname = Path.join(build_path, final_target)
         page = put_in(page, [:pathname], pathname)
         render_page(page)
       end,
@@ -178,7 +187,7 @@ defmodule Fermo do
 
   defp inner_render_page(%{template: template} = page) do
     module = module_for_template(template)
-    defaults = apply(module, :defaults, [])
+    defaults = defaults_for(module)
 
     layout = if Map.has_key?(defaults, "layout") do
       if defaults["layout"] do
@@ -211,20 +220,33 @@ defmodule Fermo do
     File.write!(pathname, body, [:write])
   end
 
-  defp render_body(module, %{template: template, params: params} = page, defaults) do
-    args = Map.merge(defaults, params)
-    render_template(module, template, page, args)
+  defp defaults_for(module) do
+    apply(module, :defaults, [])
+  end
+
+  defp params_for(module, page) do
+    defaults = defaults_for(module)
+    Map.merge(defaults, page.params)
+  end
+
+  defp render_body(module, %{template: template} = page, defaults) do
+    params = params_for(module, page)
+    render_template(module, template, page, params)
   end
 
   def render_template(module, template, page, params \\ %{}) do
+    context = build_context(module, template, page)
+    apply(module, :call, [params, context])
+  end
+
+  defp build_context(module, template, page) do
     env = System.get_env()
-    context = %{
+    %{
       module: module,
       template: template,
       page: page,
       env: env
     }
-    apply(module, :call, [params, context])
   end
 
   defp build_layout_with_content(layout, content, page) do
