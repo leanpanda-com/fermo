@@ -128,7 +128,7 @@ defmodule Fermo do
     # TODO: check if Webpack assets are ready before building HTML
     build_path = get_in(config, [:build_path])
 
-    built = Task.async_stream(
+    Task.async_stream(
       config.pages,
       fn %{template: template, target: target} = page ->
         module = module_for_template(template)
@@ -199,7 +199,7 @@ defmodule Fermo do
       "layouts/layout.html.slim" # TODO: make this a setting
     end
 
-    content = render_body(module, page, defaults)
+    content = render_body(module, page)
 
     if layout do
       build_layout_with_content(layout, content, page)
@@ -229,7 +229,7 @@ defmodule Fermo do
     Map.merge(defaults, page.params)
   end
 
-  defp render_body(module, %{template: template} = page, defaults) do
+  defp render_body(module, %{template: template} = page) do
     params = params_for(module, page)
     render_template(module, template, page, params)
   end
