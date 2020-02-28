@@ -1,11 +1,14 @@
 defmodule Fermo.MixProject do
   use Mix.Project
 
+  @version "0.7.0"
+  @git_origin "https://github.com/leanpanda-com/fermo"
+
   def project do
     [
       app: :fermo,
-      version: "0.6.3",
-      elixir: "~> 1.4",
+      version: @version,
+      elixir: "~> 1.9",
       description: "A static site generator",
       package: package(),
       build_embedded: Mix.env() == :prod,
@@ -13,7 +16,9 @@ defmodule Fermo.MixProject do
       deps: deps(),
       docs: [
         main: "Fermo",
-        extras: ["README.md", "MiddlemanToFermo.md"]
+        extras: ["README.md", "MiddlemanToFermo.md"],
+        source_ref: "v#{@version}",
+        source_url: @git_origin
       ]
     ]
   end
