@@ -32,32 +32,25 @@ defmodule Fermo do
   end
 
   @doc false
-  defmacro __before_compile__(env) do
-    config = Module.get_attribute(env.module, :config)
-    build_path = config[:build_path] || "build"
-    pages = config[:pages] || []
-    statics = config[:statics] || []
+  defmacro __before_compile__(_env) do
+    quote do
+      def initial_config() do
+        config = hd(__MODULE__.__info__(:attributes)[:config])
 
-    config =
-      config
-      |> put_in([:build_path], build_path)
-      |> put_in([:pages], pages)
-      |> put_in([:statics], statics)
-      |> put_in([:stats], %{})
+        build_path = config[:build_path] || "build"
+        pages = config[:pages] || []
+        statics = config[:statics] || []
 
-    config = Fermo.Localizable.add(config)
-    config = Fermo.Simple.add(config)
-
-    Module.put_attribute(env.module, :config, config)
-
-    get_config = quote do
-      def config() do
-        hd(__MODULE__.__info__(:attributes)[:config])
+        config
+        |> put_in([:build_path], build_path)
+        |> put_in([:pages], pages)
+        |> put_in([:statics], statics)
+        |> Fermo.Localizable.add()
+        |> Fermo.Simple.add()
+        |> put_in([:stats], %{})
         |> put_in([:stats, :start], Time.utc_now)
       end
     end
-
-    get_config
   end
 
   def page(config, template, target, params \\ nil, options \\ nil) do
@@ -102,6 +95,7 @@ defmodule Fermo do
   end
 
   def build(config) do
+    {:ok} = FermoHelpers.build_assets()
     {:ok} = FermoHelpers.load_i18n()
 
     build_path = get_in(config, [:build_path])
