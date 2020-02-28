@@ -9,7 +9,8 @@ defmodule Mix.Tasks.Fermo.Build do
   def run(_args) do
     Mix.Task.run "app.start"
     module = Mix.Fermo.Module.module!()
-    {:ok, config} = module.build()
+    {:ok, config} = module.config()
+    {:ok, config} = Fermo.build(config)
     stats = Map.get(config, :stats)
     if stats do
       do_log(stats)
