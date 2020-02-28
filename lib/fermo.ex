@@ -7,7 +7,7 @@ defmodule Fermo do
   @source_path "priv/source"
 
   def start(_start_type, _args \\ []) do
-    I18n.start_link()
+    FermoHelpers.I18n.start_link()
     Fermo.Assets.start_link()
   end
 
@@ -21,8 +21,8 @@ defmodule Fermo do
       @config unquote(opts)
 
       use Fermo.Helpers.Assets
+      use FermoHelpers.I18n
       use Fermo.Helpers.Links
-      use Fermo.Helpers.I18n
       use Fermo.Helpers.Text
       import FermoHelpers.DateTime
       import FermoHelpers.String
@@ -102,7 +102,7 @@ defmodule Fermo do
   end
 
   def build(config) do
-    Fermo.Helpers.I18n.load!()
+    FermoHelpers.I18n.load!()
 
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)

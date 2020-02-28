@@ -32,11 +32,9 @@ defmodule Fermo.MixProject do
 
   defp deps do
     [
-      {:deep_merge, "~> 1.0"},
       {:ex_doc, "~> 0.19", only: :dev},
-      {:fermo_helpers, "~> 0.6.0"},
+      {:fermo_helpers, "~> 0.7.0"},
       {:jason, "~> 1.1"},
-      {:morphix, "~> 0.0.7"},
       {:slime, "1.0.0"},
       {:yaml_elixir, "~> 1.3.0"}
     ]
