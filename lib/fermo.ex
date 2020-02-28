@@ -32,9 +32,9 @@ defmodule Fermo do
   end
 
   @doc false
-  defmacro __before_compile__(env) do
+  defmacro __before_compile__(_env) do
     quote do
-      def config() do
+      def initial_config() do
         config = hd(__MODULE__.__info__(:attributes)[:config])
 
         build_path = config[:build_path] || "build"
