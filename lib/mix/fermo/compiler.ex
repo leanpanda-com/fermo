@@ -56,7 +56,7 @@ defmodule Mix.Fermo.Compiler do
         import Fermo.YieldContent
         use Fermo.Helpers.Assets
         use Fermo.Helpers.Links
-        use Fermo.Helpers.I18n
+        use FermoHelpers.I18n
         use Fermo.Helpers.Text
         import FermoHelpers.DateTime
         import FermoHelpers.String
