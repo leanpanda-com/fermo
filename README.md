@@ -199,74 +199,11 @@ are those of the top-level page, not the partial itself.
 
 # Associated Libraries
 
-* [DatoCMS GraphQL Client]
-* [FermoHelpers]
-* [Fermo I18n]
+* [DatoCMS GraphQL Client][GraphQL]
+* [FermoHelpers][FermoHelpers]
 
-[GraphQL]: https://hexdocs.pm/datocms_graphql_client
-
-# Helpers
-
-Helpers related to the asset pipeline are provided directly by
-Fermo - see below.
-
-Fermo also provides various helpers via the [FermoHelpers] library.
-
-## Timezone Information
-
-Note: If you want to use `current_datetime/1`, you need to include
-the following dependency:
-
-```elixir
-{:tzdata, "~> 1.0"}
-```
-
-and add a config option
-
-```elixir
-config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
-```
-
+[GraphQL]: https://hexdocs.pm/datocms_graphql_client.html
 [FermoHelpers]: https://hexdocs.pm/fermo_helpers/FermoHelpers.html
-
-# Webpack Asset Pipeline
-
-Webpack-based assets can be integrated with the Fermo build.
-
-Your config should product a manifest as `build/manifest.json`:
-
-```js
-const ManifestPlugin = require('webpack-manifest-plugin')
-
-module.exports = {
-  ..
-  output: {
-    path: __dirname + '/build',
-    ...
-  },
-  ...
-  plugins: [
-    ...
-    new ManifestPlugin()
-  ]
-}
-```
-
-Run the Webpack build in your `build/0` function:
-
-```elixir
-def build do
-  ...
-  config = Fermo.Assets.build(config)
-  ...
-end
-```
-
-## Asset Helpers
-
-You can then use the helpers provided by `Fermo.Helpers.Assets`
-such as `javascript_include_tag` and you will pick up the
-correctly hashed filenames.
 
 # Localization
 

@@ -54,12 +54,12 @@ defmodule Mix.Fermo.Compiler do
         import Fermo.Partial
         require Fermo.YieldContent
         import Fermo.YieldContent
-        use Fermo.Helpers.Assets
-        use Fermo.Helpers.Links
-        use FermoHelpers.I18n
-        use Fermo.Helpers.Text
+        import FermoHelpers.Assets
         import FermoHelpers.DateTime
+        import FermoHelpers.I18n
+        import FermoHelpers.Links
         import FermoHelpers.String
+        import FermoHelpers.Text
         use Helpers
 
         Enum.map(cfs_compiled, fn {key, cf_compiled} ->

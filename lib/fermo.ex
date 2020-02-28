@@ -7,8 +7,8 @@ defmodule Fermo do
   @source_path "priv/source"
 
   def start(_start_type, _args \\ []) do
-    FermoHelpers.I18n.start_link()
-    Fermo.Assets.start_link()
+    {:ok} = FermoHelpers.start_link([:assets, :i18n])
+    {:ok, self()}
   end
 
   @doc false
@@ -20,12 +20,12 @@ defmodule Fermo do
       Module.register_attribute __MODULE__, :config, persist: true
       @config unquote(opts)
 
-      use Fermo.Helpers.Assets
-      use FermoHelpers.I18n
-      use Fermo.Helpers.Links
-      use Fermo.Helpers.Text
+      import FermoHelpers.Assets
       import FermoHelpers.DateTime
+      import FermoHelpers.I18n
+      import FermoHelpers.Links
       import FermoHelpers.String
+      import FermoHelpers.Text
 
       def environment, do: "production" # TODO
     end
@@ -102,7 +102,7 @@ defmodule Fermo do
   end
 
   def build(config) do
-    FermoHelpers.I18n.load!()
+    {:ok} = FermoHelpers.load_i18n()
 
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)
