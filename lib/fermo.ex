@@ -95,6 +95,7 @@ defmodule Fermo do
   end
 
   def build(config) do
+    {:ok} = FermoHelpers.build_assets()
     {:ok} = FermoHelpers.load_i18n()
 
     build_path = get_in(config, [:build_path])
