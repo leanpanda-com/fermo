@@ -1,11 +1,9 @@
 defmodule Fermo.Localizable do
+  import Fermo.Routes, only: [root_locale: 1]
+
   def add(config) do
+    root_locale = root_locale(config)
     locales = config[:i18n]
-    default_locale = if Map.has_key?(config, :default_locale) do
-      config[:default_locale]
-    else
-      hd(locales)
-    end
 
     exclude = Map.get(config, :exclude, []) ++ ["localizable/*"]
     config = put_in(config, [:exclude], exclude)
@@ -19,7 +17,7 @@ defmodule Fermo.Localizable do
         target = String.replace_prefix(template, "localizable/", "")
         target = Fermo.template_to_target(target, as_index_html: true)
         Enum.reduce(locales, config, fn (locale, config) ->
-          localized_target = if locale == default_locale do
+          localized_target = if locale == root_locale do
               "/#{target}"
             else
               "/#{locale}/#{target}"
