@@ -101,7 +101,7 @@ defmodule MyProject do
   use Fermo
 
   def build do
-    config = config()
+    config = initial_config()
 
     {:ok, config}
   end
