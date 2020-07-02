@@ -182,7 +182,11 @@ defmodule Mix.Fermo.Compiler do
     Code.ensure_loaded(helpers_module())
     has_helpers = has_helpers?()
     if !has_helpers do
-      Code.compile_string("defmodule #{helpers_module()} do; end")
+      [{module, bytecode}] = Code.compile_string("defmodule #{helpers_module()} do; defmacro __using__(_opts \\\\ %{}) do; end; end")
+      base = Mix.Project.compile_path()
+      module_path = Path.join(base, "#{module}.beam")
+      File.write!(module_path, bytecode, [:write])
+      Code.ensure_loaded(helpers_module())
     end
   end
 
