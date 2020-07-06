@@ -26,7 +26,7 @@ defmodule Fermo.Pagination do
     first = options[:first]
     total_items = length(items)
 
-    paginated = Stream.chunk(items, per_page, per_page, [])
+    paginated = Stream.chunk_every(items, per_page, per_page, [])
     |> Stream.with_index
     |> Enum.map(fn ({chunk, i}) ->
       # index is 1 based
