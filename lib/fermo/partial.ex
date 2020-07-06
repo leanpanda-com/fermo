@@ -10,7 +10,8 @@ defmodule Fermo.Partial do
       context = var!(context)
       page = context[:page]
       opts = unquote(opts) || []
-      param_overrides = unquote(param_overrides) || %{}
+      po = unquote(param_overrides)
+      param_overrides = if po, do: po, else: %{}
       content = opts[:do]
       params = Map.merge(template_params, param_overrides)
       p = if content do
