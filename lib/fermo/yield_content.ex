@@ -1,7 +1,4 @@
 defmodule Fermo.YieldContent do
-  import Fermo.Naming
-  import Mix.Fermo.Paths
-
   defmacro yield_content(key) do
     quote do
       params = var!(params)

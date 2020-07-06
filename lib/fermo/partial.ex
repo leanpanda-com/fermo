@@ -1,7 +1,4 @@
 defmodule Fermo.Partial do
-  import Fermo.Naming
-  import Mix.Fermo.Paths
-
   defmacro partial(path, param_overrides \\ nil, opts \\ nil) do
     module =
       path
