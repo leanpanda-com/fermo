@@ -17,7 +17,7 @@ defmodule Fermo.Partial do
       p = if content do
         put_in(params, [:content], content)
       else
-        params || %{}
+        params
       end
 
       Fermo.render_template(unquote(module), unquote(path), page, p)
