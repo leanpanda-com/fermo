@@ -93,7 +93,9 @@ defmodule Mix.Fermo.Compiler do
       end
     end
 
+    Code.compiler_options(ignore_module_conflict: true)
     [{module, bytecode} | _other] = Code.compile_quoted(quoted_module)
+    Code.compiler_options(ignore_module_conflict: false)
     base = Mix.Project.compile_path()
     module_path = Path.join(base, "#{module}.beam")
     File.write!(module_path, bytecode, [:write])
