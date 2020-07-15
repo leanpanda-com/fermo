@@ -102,6 +102,9 @@ defmodule Fermo do
     File.mkdir(build_path)
 
     copy_statics(config)
+    if config[:sitemap] do
+      Fermo.Sitemap.build(config)
+    end
 
     config = build_pages(config)
 
