@@ -14,9 +14,6 @@ defmodule Fermo.Simple do
       Regex.compile!(multiple)
     end)
 
-    locales = config[:i18n]
-    default_locale = hd(locales)
-
     templates = File.cd!("priv/source", fn ->
       Path.wildcard("**/*.slim")
     end)
@@ -29,7 +26,7 @@ defmodule Fermo.Simple do
         config
       else
         target = Fermo.template_to_target(template, as_index_html: true)
-        Fermo.add_page(config, template, target, %{}, %{locale: default_locale})
+        Fermo.add_page(config, template, target, %{})
       end
     end)
   end
