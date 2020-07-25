@@ -140,7 +140,7 @@ defmodule Fermo do
         end
         pathname = Path.join(build_path, final_target)
         page = put_in(page, [:pathname], pathname)
-        render_page(page)
+        render_page(page, config)
       end,
       [timeout: :infinity]
     ) |> Enum.to_list
@@ -149,18 +149,18 @@ defmodule Fermo do
     |> put_in([:stats, :pages_built], Time.utc_now)
   end
 
-  defp render_page(page) do
+  defp render_page(page, config) do
     with {:ok, hash} <- cache_key(page),
       {:ok, cache_pathname} <- cached_page_path(hash),
       {:ok} <- is_cached?(cache_pathname) do
       copy_file(cache_pathname, page.pathname)
     else
       {:build_and_cache, cache_pathname} ->
-        body = inner_render_page(page)
+        body = inner_render_page(page, config)
         save_file(cache_pathname, body)
         save_file(page.pathname, body)
       _ ->
-        body = inner_render_page(page)
+        body = inner_render_page(page, config)
         save_file(page.pathname, body)
     end
   end
@@ -183,7 +183,7 @@ defmodule Fermo do
     end
   end
 
-  defp inner_render_page(%{template: template} = page) do
+  defp inner_render_page(%{template: template} = page, config) do
     module = module_for_template(template)
     defaults = defaults_for(module)
 
@@ -194,7 +194,11 @@ defmodule Fermo do
         defaults["layout"]
       end
     else
-      "layouts/layout.html.slim" # TODO: make this a setting
+      if Map.has_key?(config, :layout) do
+        config.layout
+      else
+        "layouts/layout.html.slim"
+      end
     end
 
     content = render_body(module, page)
