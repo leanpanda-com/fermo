@@ -1,9 +1,9 @@
 defmodule Fermo.Localizable do
-  import Fermo.Routes, only: [root_locale: 1]
+  import Fermo.I18n, only: [root_locale: 1, locales: 1]
 
-  def add(config) do
+  def add(%{i18n: %I18n{}} = config) do
     root_locale = root_locale(config)
-    locales = config[:i18n]
+    locales = locales(config)
 
     exclude = Map.get(config, :exclude, []) ++ ["localizable/*"]
     config = put_in(config, [:exclude], exclude)
@@ -29,4 +29,5 @@ defmodule Fermo.Localizable do
       end
     end)
   end
+  def add(config) do
 end
