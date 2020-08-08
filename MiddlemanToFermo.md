@@ -52,6 +52,38 @@ Compared to the Ruby implementation:
   and cannot be obtained from `I18n.locale`,
 * Use `params.content` in layouts instead of `yield`.
 
+# Adding Pages
+
+In your `config()` method, you add single pages as follows:
+
+```elixir
+config = page(
+  config,
+  "/templates/home_page.html.slim",
+  "/index.html",
+  %{page: page},
+  %{}
+)
+```
+
+For collections:
+
+```elixir
+config = Enum.reduce(
+  posts,
+  config,
+  fn post, config ->
+    page(
+      config,
+      "/templates/post.html.slim",
+      "/posts/#{post.slug}/index.html",
+      %{post: post},
+      %{}
+    )
+  end
+)
+```
+
 # Notes about Manual Conversions of Middleman to Fermo
 
 * rename '.html' -> '.html.slim',
@@ -81,11 +113,11 @@ Include the list index:
 ## `partial`
 
 ```slim
-head= partial "head", locals: {foo: true}
+head = partial "head", locals: {foo: true}
 ```
 
 ```slime
-head= partial("head", %{foo: true})
+head = partial("partials/head", %{foo: true})
 ```
 
 ## `if`
