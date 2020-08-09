@@ -106,6 +106,7 @@ defmodule Fermo do
       Fermo.Sitemap.build(config)
     end
 
+    config = set_paths(config)
     config = build_pages(config)
 
     {:ok, config}
@@ -121,17 +122,17 @@ defmodule Fermo do
     end)
   end
 
-  defp build_pages(config) do
-    # TODO: check if Webpack assets are ready before building HTML
+  defp set_paths(config) do
     build_path = get_in(config, [:build_path])
 
-    Task.async_stream(
+    pages = Enum.map(
       config.pages,
       fn %{template: template, target: target} = page ->
         module = module_for_template(template)
         context = build_context(module, template, page)
         params = params_for(module, page)
         target_override = apply(module, :content_for, [:path, params, context])
+        # This depends on the default content_for returning "" and not nil
         final_target = if target_override == "" do
           target
         else
@@ -139,9 +140,20 @@ defmodule Fermo do
           String.replace(target_override, ~r/\n/, "")
         end
         pathname = Path.join(build_path, final_target)
-        page = put_in(page, [:pathname], pathname)
-        render_page(page, config)
-      end,
+        put_in(page, [:pathname], pathname)
+      end
+    )
+
+    put_in(config, [:pages], pages)
+  end
+
+  defp build_pages(config) do
+    # TODO: check if Webpack assets are ready before building HTML
+    # TODO: avoid passing config into tasks - decide the layout beforehand
+
+    Task.async_stream(
+      config.pages,
+      &(render_page(&1, config)),
       [timeout: :infinity]
     ) |> Enum.to_list
 
