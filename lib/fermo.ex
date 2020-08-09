@@ -61,17 +61,31 @@ defmodule Fermo do
     Fermo.Pagination.paginate(config, template, options, context, fun)
   end
 
-  def template_to_target(template, opts \\ [])
-  def template_to_target(template, as_index_html: true) do
-    target = String.replace(template, ".slim", "")
-    if target == "index.html" || String.ends_with?(target, "/index.html") do
-      target
-    else
-      String.replace(target, ".html", "/index.html")
+  def template_to_target(template, opts) do
+    String.replace(template, ".slim", "")
+    |> path_to_target(opts)
+  end
+
+  def path_to_target(path, opts \\ [])
+  def path_to_target(path, as_index_html: true) do
+    cond do
+      path == "index.html" -> path
+      String.ends_with?(path, "/index.html") -> path
+      String.ends_with?(path, ".html") ->
+        String.replace(path, ".html", "/index.html")
+      true ->
+        path <> "/index.html"
     end
   end
-  def template_to_target(template, _opts) do
-    String.replace(template, ".slim", "")
+  def path_to_target(path, _opts), do: path
+
+  def target_to_path(target) do
+    cond do
+      target == "index.html" -> "/"
+      String.ends_with?(target, "/index.html") ->
+        String.replace(target, "/index.html", "")
+      true -> target
+    end
   end
 
   def add_page(config, template, target, params \\ %{}, options \\ %{}) do
@@ -127,20 +141,26 @@ defmodule Fermo do
 
     pages = Enum.map(
       config.pages,
-      fn %{template: template, target: target} = page ->
+      fn %{template: template, target: supplied_target} = page ->
         module = module_for_template(template)
         context = build_context(module, template, page)
         params = params_for(module, page)
-        target_override = apply(module, :content_for, [:path, params, context])
+        path_override = apply(module, :content_for, [:path, params, context])
         # This depends on the default content_for returning "" and not nil
-        final_target = if target_override == "" do
-          target
+        [target, path] = if path_override == "" do
+          [supplied_target, target_to_path(supplied_target)]
         else
           # Avoid extra whitespace introduced by templating
-          String.replace(target_override, ~r/\n/, "")
+          path = String.replace(path_override, ~r/\n/, "")
+          [path_to_target(path, as_index_html: true), path]
         end
-        pathname = Path.join(build_path, final_target)
-        put_in(page, [:pathname], pathname)
+
+        pathname = Path.join(build_path, target)
+
+        page
+        |> put_in([:target], target)
+        |> put_in([:path], path)
+        |> put_in([:pathname], pathname)
       end
     )
 
