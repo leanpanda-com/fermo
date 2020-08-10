@@ -19,15 +19,16 @@ defmodule Mix.Tasks.Fermo.Build do
   end
 
   defp do_log(stats) do
-    log("Data load", stats, :start, :data_loaded)
-    log("Page preparation", stats, :prepare_pages, :pages_prepared)
-    log("Build", stats, :pages_prepared, :pages_built)
-  end
+    phases =
+      stats
+      |> Enum.map(&(&1))
+      |> Enum.sort(&(Time.compare(elem(&1, 1), elem(&2, 1)) == :lt))
 
-  defp log(message, stats, from, to) do
-    if (stats[to] != nil) and (stats[from]) != nil do
-      diff = Time.diff(stats[to], stats[from], :microsecond)
-      IO.puts "#{message}: #{diff / 1000000}s"
-    end
+    start = elem(hd(phases), 1)
+
+    Enum.each(phases, fn {action, time} ->
+      diff = Time.diff(time, start, :millisecond)
+      IO.puts "#{diff}ms #{action} "
+    end)
   end
 end
