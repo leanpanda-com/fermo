@@ -83,7 +83,7 @@ defmodule Fermo do
     cond do
       target == "index.html" -> "/"
       String.ends_with?(target, "/index.html") ->
-        String.replace(target, "/index.html", "")
+        String.replace(target, "index.html", "")
       true -> target
     end
   end
