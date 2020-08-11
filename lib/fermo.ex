@@ -117,13 +117,14 @@ defmodule Fermo do
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)
 
-    copy_statics(config)
-    if config[:sitemap] do
-      Fermo.Sitemap.build(config)
-    end
-
-    config = set_paths(config)
-    config = build_pages(config)
+    config =
+      config
+      |> copy_statics()
+      |> set_paths()
+      |> Fermo.Sitemap.build()
+      |> merge_default_options()
+      |> Fermo.I18n.optionally_build_path_map()
+      |> build_pages()
 
     {:ok, config}
   end
@@ -167,7 +168,45 @@ defmodule Fermo do
       end
     )
 
-    put_in(config, [:pages], pages)
+    config
+    |> put_in([:pages], pages)
+    |> put_in([:stats, :set_paths_completed], Time.utc_now)
+  end
+
+  defp merge_default_options(config) do
+    pages = Enum.map(
+      config.pages,
+      fn %{template: template} = page ->
+        module = module_for_template(template)
+        defaults = defaults_for(module)
+
+        layout = if Map.has_key?(defaults, "layout") do
+          if defaults["layout"] do
+            defaults["layout"] <> ".html.slim"
+          else
+            defaults["layout"]
+          end
+        else
+          if Map.has_key?(config, :layout) do
+            config.layout
+          else
+            "layouts/layout.html.slim"
+          end
+        end
+
+        options =
+          defaults
+          |> Map.merge(page.options)
+          |> put_in([:module], module)
+          |> put_in([:layout], layout)
+
+        put_in(page, [:options], options)
+      end
+    )
+
+    config
+    |> put_in([:pages], pages)
+    |> put_in([:stats, :merge_default_options_completed], Time.utc_now)
   end
 
   defp build_pages(config) do
@@ -176,26 +215,26 @@ defmodule Fermo do
 
     Task.async_stream(
       config.pages,
-      &(render_page(&1, config)),
+      &(render_page(&1)),
       [timeout: :infinity]
     ) |> Enum.to_list
 
     config
-    |> put_in([:stats, :pages_built], Time.utc_now)
+    |> put_in([:stats, :build_pages_completed], Time.utc_now)
   end
 
-  defp render_page(page, config) do
+  defp render_page(page) do
     with {:ok, hash} <- cache_key(page),
       {:ok, cache_pathname} <- cached_page_path(hash),
       {:ok} <- is_cached?(cache_pathname) do
       copy_file(cache_pathname, page.pathname)
     else
       {:build_and_cache, cache_pathname} ->
-        body = inner_render_page(page, config)
+        body = inner_render_page(page)
         save_file(cache_pathname, body)
         save_file(page.pathname, body)
       _ ->
-        body = inner_render_page(page, config)
+        body = inner_render_page(page)
         save_file(page.pathname, body)
     end
   end
@@ -218,28 +257,11 @@ defmodule Fermo do
     end
   end
 
-  defp inner_render_page(%{template: template} = page, config) do
-    module = module_for_template(template)
-    defaults = defaults_for(module)
+  defp inner_render_page(page) do
+    content = render_body(page.options.module, page)
 
-    layout = if Map.has_key?(defaults, "layout") do
-      if defaults["layout"] do
-        defaults["layout"] <> ".html.slim"
-      else
-        defaults["layout"]
-      end
-    else
-      if Map.has_key?(config, :layout) do
-        config.layout
-      else
-        "layouts/layout.html.slim"
-      end
-    end
-
-    content = render_body(module, page)
-
-    if layout do
-      build_layout_with_content(layout, content, page)
+    if page.options.layout do
+      build_layout_with_content(page.options.layout, content, page)
     else
       content
     end
@@ -259,6 +281,12 @@ defmodule Fermo do
 
   defp defaults_for(module) do
     apply(module, :defaults, [])
+    |> Enum.into(
+      %{},
+      fn {key, value} ->
+        {String.to_atom(key), value}
+      end
+    )
   end
 
   defp params_for(module, page) do
