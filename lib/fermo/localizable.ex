@@ -1,5 +1,5 @@
 defmodule Fermo.Localizable do
-  import Fermo.Routes, only: [root_locale: 1]
+  import Fermo.I18n, only: [root_locale: 1]
 
   def add(%{i18n: _i18n} = config) do
     root_locale = root_locale(config)
