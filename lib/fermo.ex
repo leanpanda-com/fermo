@@ -109,6 +109,8 @@ defmodule Fermo do
   end
 
   def build(config) do
+    config = put_in(config, [:stats, :build_started], Time.utc_now)
+
     {:ok} = FermoHelpers.build_assets()
     {:ok} = FermoHelpers.load_i18n()
 
@@ -134,6 +136,7 @@ defmodule Fermo do
       target_pathname = Path.join(build_path, target)
       copy_file(source_pathname, target_pathname)
     end)
+    put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end
 
   defp set_paths(config) do
