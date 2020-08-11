@@ -67,7 +67,8 @@ defmodule Fermo do
   end
 
   def path_to_target(path, opts \\ [])
-  def path_to_target(path, as_index_html: true) do
+  def path_to_target(path, as_index_html: false), do: path
+  def path_to_target(path, _opts) do
     cond do
       path == "index.html" -> path
       String.ends_with?(path, "/index.html") -> path
@@ -77,7 +78,6 @@ defmodule Fermo do
         path <> "/index.html"
     end
   end
-  def path_to_target(path, _opts), do: path
 
   def target_to_path(target) do
     cond do
