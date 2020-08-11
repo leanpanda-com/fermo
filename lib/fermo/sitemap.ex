@@ -3,7 +3,7 @@ defmodule Fermo.Sitemap do
   @open_tag ~S(<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @close_tag ~S(</urlset>)
 
-  def build(config) do
+  def build(%{sitemap: sitemap} = config) do
     root = config.base_url
     build_path = config[:build_path] || "build"
     sitemap_pathname = build_path <> "/sitemap.xml"
@@ -12,8 +12,8 @@ defmodule Fermo.Sitemap do
 
     config_defaults = %{
       lastmod: lastmod,
-      change_frequency: config.sitemap[:default_change_frequency] || "weekly",
-      priority: config.sitemap[:default_priority] || 0.5
+      change_frequency: sitemap[:default_change_frequency] || "weekly",
+      priority: sitemap[:default_priority] || 0.5
     }
 
     File.write!(sitemap_pathname, @xml_header)
@@ -42,5 +42,7 @@ defmodule Fermo.Sitemap do
     |> Stream.run()
 
     File.write!(sitemap_pathname, @close_tag, [:append])
+    put_in(config, [:stats, :sitemap_built], Time.utc_now)
   end
+  def build(config), do: config
 end
