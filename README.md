@@ -190,6 +190,7 @@ Information about the top-level page.
 
 * `:template` - the template path and name relative to the source root,
 * `:target` - the path of the generated file,
+* `:path` - the online path of the page,
 * `:params` - the parameters passed to the template,
 * `:options` - other options, e.g. the locale.
 
