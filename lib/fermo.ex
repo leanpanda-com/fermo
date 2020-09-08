@@ -196,7 +196,7 @@ defmodule Fermo do
 
         options =
           defaults
-          |> Map.merge(page.options)
+          |> Map.merge(page.options || %{})
           |> put_in([:module], module)
           |> put_in([:layout], layout)
 
