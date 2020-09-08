@@ -179,6 +179,7 @@ Top level pages are called with the following parameters:
 ### Context
 
 * `:env` - the application environment,
+* `:module` - the module of the compiled template,
 * `:template` - the top-level page or partial template pathname, with path
   relative to the source root,
 * `:page` - see below.
