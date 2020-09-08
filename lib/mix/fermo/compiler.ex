@@ -72,6 +72,7 @@ defmodule Mix.Fermo.Compiler do
           end
         end)
 
+        # TODO: Shouldn't this return nil?
         def content_for(key, params, context) do
           ""
         end
