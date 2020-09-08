@@ -3,7 +3,8 @@ defmodule Fermo.Sitemap do
   @open_tag ~S(<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @close_tag ~S(</urlset>)
 
-  def build(%{sitemap: sitemap} = config) do
+  def build(config, file_module \\ File)
+  def build(%{sitemap: sitemap} = config, file_module) do
     root = config.base_url
     build_path = config[:build_path] || "build"
     sitemap_pathname = build_path <> "/sitemap.xml"
@@ -16,8 +17,8 @@ defmodule Fermo.Sitemap do
       priority: sitemap[:default_priority] || 0.5
     }
 
-    File.write!(sitemap_pathname, @xml_header)
-    File.write!(sitemap_pathname, @open_tag, [:append])
+    file_module.write!(sitemap_pathname, @xml_header)
+    file_module.write!(sitemap_pathname, @open_tag, [:append])
 
     Stream.map(config.pages, fn page ->
       module = Fermo.module_for_template(page.template)
@@ -26,7 +27,7 @@ defmodule Fermo.Sitemap do
 
       values = Map.merge(config_defaults, page_defaults)
       if !page_defaults[:hide_from_sitemap] do
-        loc = "#{root}#{page.target}"
+        loc = "#{root}#{page.path}"
         ~s(
           <url>
             <loc>#{loc}</loc>
@@ -38,11 +39,11 @@ defmodule Fermo.Sitemap do
       end
     end)
     |> Stream.filter(&(&1))
-    |> Stream.into(File.stream!(sitemap_pathname, [:append, :utf8]))
+    |> Stream.into(file_module.stream!(sitemap_pathname, [:append, :utf8]))
     |> Stream.run()
 
-    File.write!(sitemap_pathname, @close_tag, [:append])
+    file_module.write!(sitemap_pathname, @close_tag, [:append])
     put_in(config, [:stats, :sitemap_built], Time.utc_now)
   end
-  def build(config), do: config
+  def build(config, _file_module), do: config
 end

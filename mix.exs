@@ -14,6 +14,7 @@ defmodule Fermo.MixProject do
       package: package(),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      consolidate_protocols: Mix.env() != :test,
       deps: deps(),
       docs: [
         extras: ["README.md", "MiddlemanToFermo.md"],
