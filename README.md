@@ -228,6 +228,59 @@ defmodule MyProject do
 end
 ```
 
+## `:localized_paths`
+
+Fermo can optionally create a mapping of translated paths for any
+page.
+
+This allows you to easily manage language switching UIs and alternate
+language meta tags.
+
+To activate localized_paths, you need to pass a flag in your initial
+config:
+
+```elixir
+defmodule MyProject do
+  use Fermo, %{
+    ...
+    i18n: [:en, :fr],
+    path_map: true,
+    ...
+  }
+
+  ...
+end
+```
+
+Then ensure you pass an `:id` and `:locale` in the options parameter
+of your Fermo.page/5 calls:
+
+```elixir
+Fermo.page(
+  config,
+  "templates/my_template.html.slim",
+  "/posts/#{post.slug}/index.html",
+  %{post: post},
+  %{locale: :fr, id: "post-#{post.id}"}
+)
+```
+
+When you do this, Fermo will collect together all pages with the same `:id`
+so when your template is called, it will have a `:localized_paths` Map available:
+
+```elixir
+%{
+  ...
+  localized_paths: %{
+    en: "/posts/about-localization",
+    fr: "/posts/a-propos-de-la-localisation",
+  }
+}
+```
+
+You can then use `:localized_paths` to build create links between
+the different language versions of a page.
+
 # Middleman to Fermo
 
 Fermo was created as an improvement on Middleman, so its defaults
