@@ -169,6 +169,13 @@ head = partial("partials/head", %{foo: true})
   = squared_image(image: image, size: 70)
 ```
 
+## Escaped and unescaped HTML
+
+In SLIM, `==` is used to introduce text that should not be HTML-escaped.
+This syntax has been introduced into SLIME, but requires a dependency on
+Phoenix's HTML engine (https://github.com/slime-lang/slime/pull/145).
+For now, this syntax is not supported by Fermo.
+
 # Libraries
 
 Here are some example of replacements for common Ruby Gems used in
