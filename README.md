@@ -281,6 +281,15 @@ so when your template is called, it will have a `:localized_paths` Map available
 You can then use `:localized_paths` to build create links between
 the different language versions of a page.
 
+You can do the same for non-dynamic localized pages too, by indicating
+the id in the template's frontmatter:
+
+```slim
+---
+id: my-localized-page
+---
+```
+
 # Middleman to Fermo
 
 Fermo was created as an improvement on Middleman, so its defaults
