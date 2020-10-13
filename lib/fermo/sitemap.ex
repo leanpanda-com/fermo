@@ -21,7 +21,7 @@ defmodule Fermo.Sitemap do
     file_module.write!(sitemap_pathname, @open_tag, [:append])
 
     Stream.map(config.pages, fn page ->
-      module = Fermo.module_for_template(page.template)
+      module = Fermo.Template.module_for_template(page.template)
       page_defaults = module.defaults()
       |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
 
