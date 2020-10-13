@@ -20,7 +20,7 @@ defmodule Fermo.Partial do
         params
       end
 
-      Fermo.render_template(unquote(module), unquote(path), page, p)
+      Fermo.Template.render_template(unquote(module), unquote(path), page, p)
     end
   end
 end

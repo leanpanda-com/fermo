@@ -1,8 +1,7 @@
 defmodule Fermo do
   require EEx
   require Slime
-  import Fermo.Naming
-  import Mix.Fermo.Paths
+  import Mix.Fermo.Paths, only: [source_path: 0]
 
   def start(_start_type, _args \\ []) do
     {:ok} = FermoHelpers.start_link([:assets, :i18n])
@@ -122,7 +121,7 @@ defmodule Fermo do
       |> Fermo.Sitemap.build()
       |> merge_default_options()
       |> Fermo.I18n.optionally_build_path_map()
-      |> build_pages()
+      |> Fermo.Build.run()
 
     {:ok, config}
   end
@@ -133,7 +132,7 @@ defmodule Fermo do
     Enum.each(statics, fn (%{source: source, target: target}) ->
       source_pathname = Path.join(source_path(), source)
       target_pathname = Path.join(build_path, target)
-      copy_file(source_pathname, target_pathname)
+      Fermo.File.copy(source_pathname, target_pathname)
     end)
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end
@@ -144,9 +143,9 @@ defmodule Fermo do
     pages = Enum.map(
       config.pages,
       fn %{template: template, target: supplied_target} = page ->
-        module = module_for_template(template)
-        context = build_context(module, template, page)
-        params = params_for(module, page)
+        module = Fermo.Template.module_for_template(template)
+        context = Fermo.Template.build_context(module, template, page)
+        params = Fermo.Template.params_for(module, page)
         path_override = apply(module, :content_for, [:path, params, context])
         # This depends on the default content_for returning "" and not nil
         [target, path] = if path_override == "" do
@@ -175,8 +174,8 @@ defmodule Fermo do
     pages = Enum.map(
       config.pages,
       fn %{template: template} = page ->
-        module = module_for_template(template)
-        defaults = defaults_for(module)
+        module = Fermo.Template.module_for_template(template)
+        defaults = Fermo.Template.defaults_for(module)
 
         layout = if Map.has_key?(defaults, "layout") do
           if defaults["layout"] do
@@ -205,122 +204,5 @@ defmodule Fermo do
     config
     |> put_in([:pages], pages)
     |> put_in([:stats, :merge_default_options_completed], Time.utc_now)
-  end
-
-  defp build_pages(config) do
-    # TODO: check if Webpack assets are ready before building HTML
-    # TODO: avoid passing config into tasks - decide the layout beforehand
-
-    Task.async_stream(
-      config.pages,
-      &(render_page(&1)),
-      [timeout: :infinity]
-    ) |> Enum.to_list
-
-    config
-    |> put_in([:stats, :build_pages_completed], Time.utc_now)
-  end
-
-  defp render_page(page) do
-    with {:ok, hash} <- cache_key(page),
-      {:ok, cache_pathname} <- cached_page_path(hash),
-      {:ok} <- is_cached?(cache_pathname) do
-      copy_file(cache_pathname, page.pathname)
-    else
-      {:build_and_cache, cache_pathname} ->
-        body = inner_render_page(page)
-        save_file(cache_pathname, body)
-        save_file(page.pathname, body)
-      _ ->
-        body = inner_render_page(page)
-        save_file(page.pathname, body)
-    end
-  end
-
-  defp cache_key(%{options: %{surrogate_key: surrogate_key}}) do
-    hash = :crypto.hash(:sha256, surrogate_key) |> Base.encode16
-    {:ok, hash}
-  end
-  defp cache_key(_page), do: {:no_key}
-
-  defp cached_page_path(hash) do
-    {:ok, Path.join("tmp/page_cache", hash)}
-  end
-
-  defp is_cached?(cached_pathname) do
-    if File.exists?(cached_pathname) do
-      {:ok}
-    else
-      {:build_and_cache, cached_pathname}
-    end
-  end
-
-  defp inner_render_page(page) do
-    content = render_body(page.options.module, page)
-
-    if page.options.layout do
-      build_layout_with_content(page.options.layout, content, page)
-    else
-      content
-    end
-  end
-
-  defp copy_file(source, destination) do
-    path = Path.dirname(destination)
-    File.mkdir_p(path)
-    {:ok, _files} = File.cp_r(source, destination)
-  end
-
-  defp save_file(pathname, body) do
-    path = Path.dirname(pathname)
-    File.mkdir_p(path)
-    File.write!(pathname, body, [:write])
-  end
-
-  defp defaults_for(module) do
-    apply(module, :defaults, [])
-    |> Enum.into(
-      %{},
-      fn {key, value} ->
-        {String.to_atom(key), value}
-      end
-    )
-  end
-
-  defp params_for(module, page) do
-    defaults = defaults_for(module)
-    Map.merge(defaults, page.params)
-  end
-
-  defp render_body(module, %{template: template} = page) do
-    params = params_for(module, page)
-    render_template(module, template, page, params)
-  end
-
-  def render_template(module, template, page, params \\ %{}) do
-    context = build_context(module, template, page)
-    apply(module, :call, [params, context])
-  end
-
-  defp build_context(module, template, page) do
-    env = System.get_env()
-    %{
-      module: module,
-      template: template,
-      page: page,
-      env: env
-    }
-  end
-
-  defp build_layout_with_content(layout, content, page) do
-    module = module_for_template(layout)
-    layout_params = Map.merge(page.params, %{content: content})
-    render_template(module, layout, page, layout_params)
-  end
-
-  def module_for_template(template) do
-    template
-    |> absolute_to_source()
-    |> source_path_to_module()
   end
 end

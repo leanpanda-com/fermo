@@ -73,6 +73,8 @@ defmodule Mix.Fermo.Compiler do
         end)
 
         # TODO: Shouldn't this return nil?
+        # TODO: if we change this to return nil,
+        #   we need to update set_paths/1
         def content_for(key, params, context) do
           ""
         end
