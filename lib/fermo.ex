@@ -4,8 +4,6 @@ defmodule Fermo do
   import Fermo.Naming
   import Mix.Fermo.Paths
 
-  @source_path "priv/source"
-
   def start(_start_type, _args \\ []) do
     {:ok} = FermoHelpers.start_link([:assets, :i18n])
     {:ok, self()}
@@ -133,7 +131,7 @@ defmodule Fermo do
     statics = config[:statics]
     build_path = get_in(config, [:build_path])
     Enum.each(statics, fn (%{source: source, target: target}) ->
-      source_pathname = Path.join(@source_path, source)
+      source_pathname = Path.join(source_path(), source)
       target_pathname = Path.join(build_path, target)
       copy_file(source_pathname, target_pathname)
     end)

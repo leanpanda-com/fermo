@@ -1,5 +1,6 @@
 defmodule Fermo.Localizable do
   import Fermo.I18n, only: [root_locale: 1]
+  import Mix.Fermo.Paths, only: [source_path: 0]
 
   def add(%{i18n: _i18n} = config) do
     root_locale = root_locale(config)
@@ -8,7 +9,7 @@ defmodule Fermo.Localizable do
     exclude = Map.get(config, :exclude, []) ++ ["localizable/*"]
     config = put_in(config, [:exclude], exclude)
 
-    templates = File.cd!("priv/source", fn ->
+    templates = File.cd!(source_path(), fn ->
       Path.wildcard("**/*.slim")
     end)
 

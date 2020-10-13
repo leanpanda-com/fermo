@@ -6,6 +6,9 @@ defmodule Fermo.Simple do
   it locates all SLIM files not handled by other modules
   and adds them to the transformation queue.
   """
+
+  import Mix.Fermo.Paths, only: [source_path: 0]
+
   def add(config) do
     exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
@@ -14,7 +17,7 @@ defmodule Fermo.Simple do
       Regex.compile!(multiple)
     end)
 
-    templates = File.cd!("priv/source", fn ->
+    templates = File.cd!(source_path(), fn ->
       Path.wildcard("**/*.slim")
     end)
 
