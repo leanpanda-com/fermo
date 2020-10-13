@@ -320,10 +320,6 @@ defmodule Fermo do
     render_template(module, layout, page, layout_params)
   end
 
-  def full_template_path(path) do
-    Path.join(@source_path, path)
-  end
-
   def module_for_template(template) do
     template
     |> absolute_to_source()
