@@ -4,6 +4,7 @@ defmodule Fermo.Live.App do
   use Application
 
   def start(_type, _args) do
+    Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
     children = [
       {Plug.Cowboy, scheme: :http, plug: Fermo.Live.Plug, options: [port: 4001]}
@@ -16,5 +17,6 @@ defmodule Fermo.Live.App do
   def stop(state) do
     IO.puts "state: #{inspect(state, [pretty: true, width: 0])}"
     Application.stop(:cowboy)
+    Application.stop(:telemetry)
   end
 end
