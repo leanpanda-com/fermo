@@ -7,7 +7,6 @@ defmodule Mix.Tasks.Fermo.Live do
   Serves the files from the 'build' directory
   """
   def run(_args) do
-    Fermo.Live.App.start(:normal, [])
-    Fermo.Live.App.stop(:normal)
+    {:ok, _pid} = Fermo.Live.App.start(:normal, [])
   end
 end
