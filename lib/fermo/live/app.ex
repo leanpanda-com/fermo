@@ -7,7 +7,9 @@ defmodule Fermo.Live.App do
     Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
     children = [
-      {Plug.Cowboy, scheme: :http, plug: Fermo.Live.Plug, options: [port: 4001]}
+      {Plug.Cowboy, scheme: :http, plug: Fermo.Live.Plug, options: [port: 4001]},
+      {Fermo.Live.Watcher, dirs: ["priv/source"]},
+      {Fermo.Live.ChangeHandler, []}
     ]
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
     counts = Supervisor.count_children(pid)
