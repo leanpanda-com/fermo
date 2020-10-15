@@ -12,5 +12,6 @@ defmodule Mix.Tasks.Fermo.Live do
       IO.gets("Fermo Live is running on port 4001\n")
     end)
     Task.await(t, :infinity)
+    Fermo.Live.App.stop(:normal)
   end
 end
