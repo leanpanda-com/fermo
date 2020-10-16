@@ -11,8 +11,9 @@ defmodule Fermo.Live.ChangeHandler do
     subscribe(%{})
   end
 
-  def handle_info({:file_event, _pid, {path, _event}}, state) do
+  def handle_info({:file_event, _pid, {path, event}}, state) do
     IO.puts "File changed, path: #{path}"
+    IO.puts "event: #{inspect(event, [pretty: true, width: 0])}"
 
     {:noreply, state}
   end
