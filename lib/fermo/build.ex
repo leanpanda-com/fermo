@@ -5,25 +5,35 @@ defmodule Fermo.Build do
 
     Task.async_stream(
       config.pages,
-      &(render_page(&1)),
+      &(render_cache_and_save(&1)),
       [timeout: :infinity]
     ) |> Enum.to_list
 
     put_in(config, [:stats, :build_pages_completed], Time.utc_now)
   end
 
-  defp render_page(page) do
+  def render_page(page) do
+    content = render_body(page.options.module, page)
+
+    if page.options.layout do
+      build_layout_with_content(page.options.layout, content, page)
+    else
+      content
+    end
+  end
+
+  defp render_cache_and_save(page) do
     with {:ok, hash} <- cache_key(page),
       {:ok, cache_pathname} <- cached_page_path(hash),
       {:ok} <- is_cached?(cache_pathname) do
       Fermo.File.copy(cache_pathname, page.pathname)
     else
       {:build_and_cache, cache_pathname} ->
-        body = inner_render_page(page)
+        body = render_page(page)
         Fermo.File.save(cache_pathname, body)
         Fermo.File.save(page.pathname, body)
       _ ->
-        body = inner_render_page(page)
+        body = render_page(page)
         Fermo.File.save(page.pathname, body)
     end
   end
@@ -43,16 +53,6 @@ defmodule Fermo.Build do
       {:ok}
     else
       {:build_and_cache, cached_pathname}
-    end
-  end
-
-  defp inner_render_page(page) do
-    content = render_body(page.options.module, page)
-
-    if page.options.layout do
-      build_layout_with_content(page.options.layout, content, page)
-    else
-      content
     end
   end
 
