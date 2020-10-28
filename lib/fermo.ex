@@ -116,10 +116,9 @@ defmodule Fermo do
 
     config =
       config
+      |> post_config()
       |> copy_statics()
-      |> set_paths()
       |> Fermo.Sitemap.build()
-      |> merge_default_options()
       |> Fermo.I18n.optionally_build_path_map()
       |> Fermo.Build.run()
 
@@ -137,72 +136,69 @@ defmodule Fermo do
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end
 
-  defp set_paths(config) do
-    build_path = get_in(config, [:build_path])
-
+  def post_config(config) do
     pages = Enum.map(
       config.pages,
-      fn %{template: template, target: supplied_target} = page ->
-        module = Fermo.Template.module_for_template(template)
-        context = Fermo.Template.build_context(module, template, page)
-        params = Fermo.Template.params_for(module, page)
-        path_override = apply(module, :content_for, [:path, params, context])
-        # This depends on the default content_for returning "" and not nil
-        [target, path] = if path_override == "" do
-          [supplied_target, target_to_path(supplied_target)]
-        else
-          # Avoid extra whitespace introduced by templating
-          path = String.replace(path_override, ~r/\n/, "")
-          [path_to_target(path, as_index_html: true), path]
-        end
-
-        pathname = Path.join(build_path, target)
-
+      fn page ->
         page
-        |> put_in([:target], target)
-        |> put_in([:path], path)
-        |> put_in([:pathname], pathname)
+        |> set_path(config)
+        |> merge_default_options(config)
       end
     )
 
     config
     |> put_in([:pages], pages)
-    |> put_in([:stats, :set_paths_completed], Time.utc_now)
+    |> put_in([:stats, :post_config_completed], Time.utc_now)
   end
 
-  defp merge_default_options(config) do
-    pages = Enum.map(
-      config.pages,
-      fn %{template: template} = page ->
-        module = Fermo.Template.module_for_template(template)
-        defaults = Fermo.Template.defaults_for(module)
+  def set_path(page, config) do
+    %{template: template, target: supplied_target} = page
+    module = Fermo.Template.module_for_template(template)
+    context = Fermo.Template.build_context(module, template, page)
+    params = Fermo.Template.params_for(module, page)
+    path_override = apply(module, :content_for, [:path, params, context])
+    # This depends on the default content_for returning "" and not nil
+    [target, path] = if path_override == "" do
+      [supplied_target, target_to_path(supplied_target)]
+    else
+      # Avoid extra whitespace introduced by templating
+      path = String.replace(path_override, ~r/\n/, "")
+      [path_to_target(path, as_index_html: true), path]
+    end
 
-        layout = if Map.has_key?(defaults, "layout") do
-          if defaults["layout"] do
-            defaults["layout"] <> ".html.slim"
-          else
-            defaults["layout"]
-          end
-        else
-          if Map.has_key?(config, :layout) do
-            config.layout
-          else
-            "layouts/layout.html.slim"
-          end
-        end
+    pathname = Path.join(config.build_path, target)
 
-        options =
-          defaults
-          |> Map.merge(page.options || %{})
-          |> put_in([:module], module)
-          |> put_in([:layout], layout)
+    page
+    |> put_in([:target], target)
+    |> put_in([:path], path)
+    |> put_in([:pathname], pathname)
+  end
 
-        put_in(page, [:options], options)
+  def merge_default_options(page, config) do
+    template = page.template
+    module = Fermo.Template.module_for_template(template)
+    defaults = Fermo.Template.defaults_for(module)
+
+    layout = if Map.has_key?(defaults, "layout") do
+      if defaults["layout"] do
+        defaults["layout"] <> ".html.slim"
+      else
+        defaults["layout"]
       end
-    )
+    else
+      if Map.has_key?(config, :layout) do
+        config.layout
+      else
+        "layouts/layout.html.slim"
+      end
+    end
 
-    config
-    |> put_in([:pages], pages)
-    |> put_in([:stats, :merge_default_options_completed], Time.utc_now)
+    options =
+      defaults
+      |> Map.merge(page.options || %{})
+      |> put_in([:module], module)
+      |> put_in([:layout], layout)
+
+    put_in(page, [:options], options)
   end
 end
