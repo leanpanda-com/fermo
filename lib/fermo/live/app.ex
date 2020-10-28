@@ -12,8 +12,7 @@ defmodule Fermo.Live.App do
       {Fermo.Live.ChangeHandler, []}
     ]
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
-    counts = Supervisor.count_children(pid)
-    IO.puts "counts: #{inspect(counts, [pretty: true, width: 0])}"
+
     {:ok, pid}
   end
 
