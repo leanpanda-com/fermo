@@ -2,25 +2,63 @@ defmodule Fermo.Live.Plug do
   import Plug.Conn
   import Mix.Fermo.Paths, only: [app_path: 0]
 
-  def init(options) do
-    options
+  def init(_options) do
+    {:ok} = FermoHelpers.build_assets()
+    {:ok} = FermoHelpers.load_i18n()
+    module = Mix.Fermo.Module.module!()
+    IO.write "Requesting #{module} config... "
+    {:ok, config} = module.config()
+    IO.puts "Done!"
+    IO.write "Running post config... "
+    config = Fermo.post_config(config)
+    IO.puts "Done!"
+    config
   end
 
-  def call(conn, _opts) do
-    request_path = request_path(conn)
-    with {:ok, request_build_path} = request_build_path(request_path),
-         {:ok, full_path} <- full_path(request_build_path),
-         {:ok, extension} = extension(full_path),
-         mime_type <- mime_type(extension) do
-      respond_with_file(conn, full_path, mime_type)
+  def call(conn, config) do
+    request_path(conn) |> handle_request_path(conn, config)
+  end
+
+  defp handle_request_path({:error, :request_path_missing}, conn, _config) do
+    respond_403(conn)
+  end
+  defp handle_request_path({:ok, request_path}, conn, config) do
+    if is_static?(request_path) do
+      serve_static(request_path, conn)
     else
-      {:error, :illegal_path} ->
-        respond_403(conn)
-      {:error, :doesnt_exist} ->
-        respond_404(conn)
-      {:error, :unexpected_extname_result} ->
-        respond_500(conn)
+      case find_page(request_path, config) do
+        {:ok, page} ->
+          serve_page(page, conn, config)
+        _ ->
+          respond_404(conn)
+      end
     end
+  end
+
+  defp is_static?(path) do
+    build_path = build_path(path)
+    File.regular?(build_path)
+  end
+
+  defp serve_static(path, conn) do
+    build_path = build_path(path)
+    {:ok, extension} = extension(path)
+    mime_type = mime_type(extension)
+    respond_with_file(conn, build_path, mime_type)
+  end
+
+  defp find_page(request_path, config) do
+    page = Enum.find(config.pages, &(&1.path == request_path))
+    if page do
+      {:ok, page}
+    else
+      {:error, :not_found}
+    end
+  end
+
+  defp serve_page(page, conn, _config) do
+    html = Fermo.Build.render_page(page)
+    respond_with_html(conn, html)
   end
 
   defp respond_403(conn) do
@@ -35,52 +73,32 @@ defmodule Fermo.Live.Plug do
     |> send_resp(404, "Not found")
   end
 
-  defp respond_500(conn) do
-    conn
-    |> put_resp_content_type("text/plain")
-    |> send_resp(500, "Application error")
-  end
-
   defp respond_with_file(conn, full_path, mime_type) do
     conn
     |> put_resp_content_type(mime_type)
     |> send_resp(200, File.read!(full_path))
   end
 
-  defp request_path(conn), do: conn.request_path
+  defp respond_with_html(conn, html) do
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_resp(200, html)
+  end
+
+  defp request_path(conn) do
+    case conn.request_path do
+      nil -> {:error, :request_path_missing}
+      _ -> {:ok, Path.expand(conn.request_path) <> "/"}
+    end
+  end
 
   defp build_root do
     Path.join(app_path(), "build")
     |> Path.expand()
   end
 
-  # Illegal paths contain more ".." elements
-  # than other elements and result in paths
-  # outside of the build directory
-  defp request_build_path(path) do
-    build_root = build_root()
-    full = Path.join(build_root, path)
-    expanded = Path.expand(full)
-    if String.starts_with?(expanded, build_root) do
-      {:ok, full}
-    else
-      {:error, :illegal_path}
-    end
-  end
-
-  # If the path ends in /, look for /index.html
-  # etc
-  defp full_path(path) do
-    cond do
-      File.regular?(path) ->
-        {:ok, path}
-      String.ends_with?(path, "/") && File.regular?(path <> "index.html") ->
-        {:ok, path <> "index.html"}
-      File.regular?(path <> "/index.html") ->
-        {:ok, path <> "/index.html"}
-      true ->
-        {:error, :doesnt_exist}
-    end
+  defp build_path(path) do
+    Path.join(build_root(), path)
   end
 
   defp extension(path) do
