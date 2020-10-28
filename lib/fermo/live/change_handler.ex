@@ -7,7 +7,7 @@ defmodule Fermo.Live.ChangeHandler do
     GenServer.start_link(__MODULE__, default)
   end
 
-  def init(state) do
+  def init(_initial_state) do
     subscribe(%{})
   end
 
