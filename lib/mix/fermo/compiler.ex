@@ -9,8 +9,16 @@ defmodule Mix.Fermo.Compiler do
     ensure_helpers_module()
     all_sources = all_sources()
     changed = changed_since(all_sources, Manifest.timestamp())
-    Enum.each(changed, &compile_file/1)
-    Manifest.write(all_sources, compilation_timestamp)
+    count = length(changed)
+    if count > 0 do
+      IO.write "Fermo.Compiler compiling #{count} file(s)... "
+      Enum.each(changed, &compile_file/1)
+      IO.puts "Done!"
+    end
+
+    {:ok} = Manifest.write(all_sources, compilation_timestamp)
+
+    :ok
   end
 
   defp compile_file(template) do

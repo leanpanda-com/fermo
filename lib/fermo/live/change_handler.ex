@@ -12,8 +12,10 @@ defmodule Fermo.Live.ChangeHandler do
   end
 
   def handle_info({:file_event, _pid, {path, event}}, state) do
-    IO.puts "File changed, path: #{path}"
-    IO.puts "event: #{inspect(event, [pretty: true, width: 0])}"
+    if :modified in event do
+      IO.puts "File changed: '#{path}'"
+      :ok = Mix.Fermo.Compiler.run()
+    end
 
     {:noreply, state}
   end

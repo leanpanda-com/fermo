@@ -25,5 +25,6 @@ defmodule Mix.Fermo.Compiler.Manifest do
     path = path()
     File.write!(path, manifest_data)
     File.touch!(path, timestamp)
+    {:ok}
   end
 end
