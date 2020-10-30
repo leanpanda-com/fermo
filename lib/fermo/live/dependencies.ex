@@ -23,9 +23,9 @@ defmodule Fermo.Live.Dependencies do
     GenServer.call(@name, {:page_from_path, path})
   end
 
-  def page_from_template(template) do
-    IO.puts "Dependencies.page_from_template template: #{inspect(template, [pretty: true, width: 0])}"
-    GenServer.call(@name, {:page_from_template, template})
+  def pages_from_template(template) do
+    IO.puts "Dependencies.pages_from_template template: #{inspect(template, [pretty: true, width: 0])}"
+    GenServer.call(@name, {:pages_from_template, template})
   end
 
   def handle_call({:page_from_path, path}, _from, config) do
@@ -38,12 +38,8 @@ defmodule Fermo.Live.Dependencies do
     end
   end
 
-  def handle_call({:page_from_template, template}, _from, config) do
-    page = Enum.find(config.pages, &(&1.template == template))
-    if page do
-      {:reply, {:ok, page}, config}
-    else
-      {:reply, {:error, :not_found}, config}
-    end
+  def handle_call({:pages_from_template, template}, _from, config) do
+    pages = Enum.filter(config.pages, &(&1.template == template))
+    {:reply, {:ok, pages}, config}
   end
 end

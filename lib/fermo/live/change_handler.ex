@@ -53,17 +53,14 @@ defmodule Fermo.Live.ChangeHandler do
 
   defp notify_sockets(relative_path) do
     IO.puts "relative_path: #{relative_path}"
-    case Fermo.Live.Dependencies.page_from_template(relative_path) do
-      {:ok, page} ->
-        IO.puts "page: #{inspect(page, [pretty: true, width: 0])}"
-        subscribed = Fermo.Live.SocketRegistry.subscribed(page.path)
-        IO.puts "subscribed: #{inspect(subscribed, [pretty: true, width: 0])}"
-        Enum.each(subscribed, fn pid ->
-          send(pid, {:reload})
-        end)
-      _ ->
-        IO.puts "notify_sockets page not found"
-        :not_found
-    end
+    pages = Fermo.Live.Dependencies.pages_from_template(relative_path)
+    IO.puts "pages: #{inspect(pages, [pretty: true, width: 0])}"
+    Enum.each(pages, fn page ->
+      subscribed = Fermo.Live.SocketRegistry.subscribed(page.path)
+      IO.puts "subscribed: #{inspect(subscribed, [pretty: true, width: 0])}"
+      Enum.each(subscribed, fn pid ->
+        send(pid, {:reload})
+      end)
+    end)
   end
 end
