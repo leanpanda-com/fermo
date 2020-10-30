@@ -5,7 +5,7 @@ defmodule Fermo.Live.Watcher do
   use GenServer
   require Logger
 
-  def init(opts) do
+  def init(_opts) do
     {:ok, %{}}
   end
 
