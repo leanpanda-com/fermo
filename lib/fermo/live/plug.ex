@@ -57,8 +57,33 @@ defmodule Fermo.Live.Plug do
   end
 
   defp serve_page(page, conn, _config) do
-    html = Fermo.Build.render_page(page)
+    html = live_page(page)
     respond_with_html(conn, html)
+  end
+
+  defp live_page(page) do
+    html = Fermo.Build.render_page(page)
+    inject_reload(html)
+  end
+
+  defp inject_reload(html) do
+    if has_body_close?(html) do
+      [body | tail] = String.split(html, "</body>")
+      Enum.join([body, socket_connect_js() | tail], "\n")
+    else
+      IO.puts "no close"
+      Enum.join([html, socket_connect_js()], "\n")
+    end
+  end
+
+  defp socket_connect_js do
+    """
+    <script type="text/javascript" src="/fermo-live.js"></script>
+    """
+  end
+
+  defp has_body_close?(html) do
+    String.contains?(html, "</body>")
   end
 
   defp respond_403(conn) do
