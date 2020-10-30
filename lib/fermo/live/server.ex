@@ -1,34 +1,26 @@
-defmodule Fermo.Live.Plug do
+defmodule Fermo.Live.Server do
   import Plug.Conn
   import Mix.Fermo.Paths, only: [app_path: 0]
 
   def init(_options) do
     {:ok} = FermoHelpers.build_assets()
-    {:ok} = FermoHelpers.load_i18n()
-    module = Mix.Fermo.Module.module!()
-    IO.write "Requesting #{module} config... "
-    {:ok, config} = module.config()
-    IO.puts "Done!"
-    IO.write "Running post config... "
-    config = Fermo.post_config(config)
-    IO.puts "Done!"
-    config
+    []
   end
 
-  def call(conn, config) do
-    request_path(conn) |> handle_request_path(conn, config)
+  def call(conn, _state) do
+    request_path(conn) |> handle_request_path(conn)
   end
 
-  defp handle_request_path({:error, :request_path_missing}, conn, _config) do
+  defp handle_request_path({:error, :request_path_missing}, conn) do
     respond_403(conn)
   end
-  defp handle_request_path({:ok, request_path}, conn, config) do
+  defp handle_request_path({:ok, request_path}, conn) do
     if is_static?(request_path) do
       serve_static(request_path, conn)
     else
-      case find_page(request_path, config) do
+      case find_page(request_path) do
         {:ok, page} ->
-          serve_page(page, conn, config)
+          serve_page(page, conn)
         _ ->
           respond_404(conn)
       end
@@ -47,18 +39,38 @@ defmodule Fermo.Live.Plug do
     respond_with_file(conn, build_path, mime_type)
   end
 
-  defp find_page(request_path, config) do
-    page = Enum.find(config.pages, &(&1.path == request_path))
-    if page do
-      {:ok, page}
+  defp find_page(request_path) do
+    Fermo.Live.Dependencies.page_from_path(request_path)
+  end
+
+  defp serve_page(page, conn) do
+    html = live_page(page)
+    respond_with_html(conn, html)
+  end
+
+  defp live_page(page) do
+    html = Fermo.Build.render_page(page)
+    inject_reload(html)
+  end
+
+  defp inject_reload(html) do
+    if has_body_close?(html) do
+      [body | tail] = String.split(html, "</body>")
+      Enum.join([body, socket_connect_js() | tail], "\n")
     else
-      {:error, :not_found}
+      IO.puts "no close"
+      Enum.join([html, socket_connect_js()], "\n")
     end
   end
 
-  defp serve_page(page, conn, _config) do
-    html = Fermo.Build.render_page(page)
-    respond_with_html(conn, html)
+  defp socket_connect_js do
+    """
+    <script type="text/javascript" src="/fermo-live.js"></script>
+    """
+  end
+
+  defp has_body_close?(html) do
+    String.contains?(html, "</body>")
   end
 
   defp respond_403(conn) do
@@ -88,7 +100,13 @@ defmodule Fermo.Live.Plug do
   defp request_path(conn) do
     case conn.request_path do
       nil -> {:error, :request_path_missing}
-      _ -> {:ok, Path.expand(conn.request_path) <> "/"}
+      _ ->
+        expanded = Path.expand(conn.request_path)
+        if expanded == "/" do
+          {:ok, "/"}
+        else
+          {:ok, expanded <> "/"}
+        end
     end
   end
 
