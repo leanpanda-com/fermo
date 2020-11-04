@@ -21,39 +21,38 @@ defmodule Mix.Fermo.Compiler do
     :ok
   end
 
-  defp compile_file(template) do
-    module =
-      template
-      |> absolute_to_source()
-      |> source_path_to_module()
+  defp compile_file(template_project_path) do
+    template_source_path = absolute_to_source(template_project_path)
 
-    {frontmatter, content_fors, offset, body} = parse_template(template)
+    module = source_path_to_module(template_source_path)
 
-    eex_source = precompile_slim(body, template)
+    {frontmatter, content_fors, offset, body} = parse_template(template_project_path)
+
+    eex_source = precompile_slim(body, template_project_path)
 
     # We do a first compilation here so we can trap errors
     # and give a better message
     try do
-      EEx.compile_string(eex_source, line: offset, file: template)
+      EEx.compile_string(eex_source, line: offset, file: template_project_path)
     rescue
       e in TokenMissingError ->
         message = """
         Template compilation error: #{e.description}
-        Path: '#{template}'
+        Path: '#{template_project_path}'
         """
         raise Fermo.Error, message: message
     end
 
     cfs_eex = Enum.map(content_fors, fn [key, block, offset] ->
-      eex = precompile_slim(block, template, "content_for(:#{key})")
+      eex = precompile_slim(block, template_project_path, "content_for(:#{key})")
       [key, eex, offset]
     end)
 
-    quoted_module = quote bind_quoted: binding(), file: template do
-      compiled = EEx.compile_string(eex_source, line: offset, file: template)
+    quoted_module = quote bind_quoted: binding(), file: template_project_path do
+      compiled = EEx.compile_string(eex_source, line: offset, file: template_project_path)
 
       cfs_compiled = Enum.map(cfs_eex, fn [key, eex, offset] ->
-        cf_compiled = EEx.compile_string(eex, line: offset, file: template)
+        cf_compiled = EEx.compile_string(eex, line: offset, file: template_project_path)
         {key, cf_compiled}
       end)
 
@@ -85,6 +84,10 @@ defmodule Mix.Fermo.Compiler do
         #   we need to update set_paths/1
         def content_for(key, params, context) do
           ""
+        end
+
+        def template_source_path() do
+          unquote(template_source_path)
         end
 
         # Define a method with the frontmatter, so we can merge with
