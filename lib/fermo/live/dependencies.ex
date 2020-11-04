@@ -42,15 +42,21 @@ defmodule Fermo.Live.Dependencies do
   def handle_call({:page_from_path, path}, _from, config) do
     page = Enum.find(config.pages, &(&1.path == path))
     if page do
-      IO.puts "Dependencies page_from_path page: #{inspect(page, [pretty: true, width: 0])}"
       {:reply, {:ok, page}, config}
     else
       {:reply, {:error, :not_found}, config}
     end
   end
 
-  def handle_call({:pages_from_template, template}, _from, config) do
-    pages = Enum.filter(config.pages, &(&1.template == template))
+  def handle_call({:pages_from_template, template_source_path}, _from, config) do
+    pages = Enum.filter(config.pages, fn page ->
+      if page.template == template_source_path do
+        true
+      else
+        # Doesn't match template, check in sub-dependencies (partials)
+        Enum.find(page.transient, &(&1 == template_source_path))
+      end
+    end)
     {:reply, {:ok, pages}, config}
   end
 
