@@ -10,7 +10,10 @@ defmodule Fermo.Live.Dependencies do
     {:ok, config} = module.config()
     IO.puts "Done!"
     IO.write "Running post config... "
-    config = Fermo.post_config(config)
+    config =
+      config
+      |> Fermo.post_config()
+      |> set_live_attributes()
     IO.puts "Done!"
     {:ok, config}
   end
@@ -28,6 +31,10 @@ defmodule Fermo.Live.Dependencies do
     GenServer.call(@name, {:pages_from_template, template})
   end
 
+  def add_page_dependency(path, template_source_path) do
+    GenServer.call(@name, {:add_page_dependency, path, template_source_path})
+  end
+
   def handle_call({:page_from_path, path}, _from, config) do
     page = Enum.find(config.pages, &(&1.path == path))
     if page do
@@ -41,5 +48,42 @@ defmodule Fermo.Live.Dependencies do
   def handle_call({:pages_from_template, template}, _from, config) do
     pages = Enum.filter(config.pages, &(&1.template == template))
     {:reply, {:ok, pages}, config}
+  end
+
+  def handle_call({:add_page_dependency, path, template_source_path}, _from, config) do
+    config = update_page(config, path, fn page ->
+      transient = page.transient
+      transient = if Enum.find(transient, &(&1 == template_source_path)) do
+        transient
+      else
+        [template_source_path | transient]
+      end
+      Map.put(page, :transient, transient)
+    end)
+
+    {:reply, {:ok}, config}
+  end
+
+  defp set_live_attributes(config) do
+    pages = Enum.map(config.pages, fn page ->
+      page
+      |> Map.put(:live, true)
+      |> Map.put(:transient, [])
+    end)
+
+    config
+    |> put_in([:pages], pages)
+  end
+
+  defp update_page(config, path, callback) do
+    pages = Enum.map(config.pages, fn page ->
+      if page.path == path do
+        callback.(page)
+      else
+        page
+      end
+    end)
+
+    Map.put(config, :pages, pages)
   end
 end
