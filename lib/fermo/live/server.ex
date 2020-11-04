@@ -59,7 +59,6 @@ defmodule Fermo.Live.Server do
       [body | tail] = String.split(html, "</body>")
       Enum.join([body, socket_connect_js() | tail], "\n")
     else
-      IO.puts "no close"
       Enum.join([html, socket_connect_js()], "\n")
     end
   end

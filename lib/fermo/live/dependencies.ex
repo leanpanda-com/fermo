@@ -26,9 +26,8 @@ defmodule Fermo.Live.Dependencies do
     GenServer.call(@name, {:page_from_path, path})
   end
 
-  def pages_from_template(template) do
-    IO.puts "Dependencies.pages_from_template template: #{inspect(template, [pretty: true, width: 0])}"
-    GenServer.call(@name, {:pages_from_template, template})
+  def pages_from_template(template_source_path) do
+    GenServer.call(@name, {:pages_from_template, template_source_path})
   end
 
   def clear_transient_dependencies(path) do

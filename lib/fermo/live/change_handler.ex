@@ -39,9 +39,7 @@ defmodule Fermo.Live.ChangeHandler do
   end
 
   defp relative_path(path) do
-    IO.puts "path: #{path}"
     root = Path.expand(Path.join(app_path(), "priv/source")) <> "/"
-    IO.puts "root: #{root}"
     if String.starts_with?(path, root) do
       root_length = byte_size(root)
       <<_::binary-size(root_length), rest::binary>> = path
@@ -52,12 +50,9 @@ defmodule Fermo.Live.ChangeHandler do
   end
 
   defp notify_sockets(relative_path) do
-    IO.puts "relative_path: #{relative_path}"
-    pages = Fermo.Live.Dependencies.pages_from_template(relative_path)
-    IO.puts "pages: #{inspect(pages, [pretty: true, width: 0])}"
+    {:ok, pages} = Fermo.Live.Dependencies.pages_from_template(relative_path)
     Enum.each(pages, fn page ->
       subscribed = Fermo.Live.SocketRegistry.subscribed(page.path)
-      IO.puts "subscribed: #{inspect(subscribed, [pretty: true, width: 0])}"
       Enum.each(subscribed, fn pid ->
         send(pid, {:reload})
       end)
