@@ -31,6 +31,10 @@ defmodule Fermo.Live.Dependencies do
     GenServer.call(@name, {:pages_from_template, template})
   end
 
+  def clear_transient_dependencies(path) do
+    GenServer.call(@name, {:clear_transient_dependencies, path})
+  end
+
   def add_page_dependency(path, template_source_path) do
     GenServer.call(@name, {:add_page_dependency, path, template_source_path})
   end
@@ -48,6 +52,13 @@ defmodule Fermo.Live.Dependencies do
   def handle_call({:pages_from_template, template}, _from, config) do
     pages = Enum.filter(config.pages, &(&1.template == template))
     {:reply, {:ok, pages}, config}
+  end
+
+  def handle_call({:clear_transient_dependencies, path}, _from, config) do
+    config = update_page(config, path, fn page ->
+      Map.put(page, :transient, [])
+    end)
+    {:reply, {:ok}, config}
   end
 
   def handle_call({:add_page_dependency, path, template_source_path}, _from, config) do

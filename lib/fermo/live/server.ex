@@ -44,6 +44,7 @@ defmodule Fermo.Live.Server do
   end
 
   defp serve_page(page, conn) do
+    {:ok} = Fermo.Live.Dependencies.clear_transient_dependencies(page.path)
     html = live_page(page)
     respond_with_html(conn, html)
   end
