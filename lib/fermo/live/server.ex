@@ -44,6 +44,7 @@ defmodule Fermo.Live.Server do
   end
 
   defp serve_page(page, conn) do
+    {:ok} = Fermo.Live.Dependencies.clear_transient_dependencies(page.path)
     html = live_page(page)
     respond_with_html(conn, html)
   end
@@ -58,7 +59,6 @@ defmodule Fermo.Live.Server do
       [body | tail] = String.split(html, "</body>")
       Enum.join([body, socket_connect_js() | tail], "\n")
     else
-      IO.puts "no close"
       Enum.join([html, socket_connect_js()], "\n")
     end
   end
