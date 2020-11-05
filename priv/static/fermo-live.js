@@ -1,20 +1,24 @@
-console.log('fermo-live')
-const socketPath = 'ws://' + location.host + '/__fermo/ws/live-reload'
-const socket = new WebSocket(socketPath)
+const FERMO_LIVE = {
+  socketPath: 'ws://' + window.location.host + '/__fermo/ws/live-reload'
+}
+FERMO_LIVE.socket = new window.WebSocket(FERMO_LIVE.socketPath)
 
-socket.onopen = e => {
-  console.log('onopen')
-  socket.send('subscribe:live-reload:' + location.pathname)
+const reloadPage = () => {
+  window.location.reload()
 }
 
-socket.onmessage = ({data}) => {
+FERMO_LIVE.socket.onopen = e => {
+  FERMO_LIVE.socket.send('subscribe:live-reload:' + window.location.pathname)
+}
+
+FERMO_LIVE.socket.onmessage = (event) => {
   console.log('onmessage: ', event)
-  if (data === 'reload') {
-    location.reload()
+  if (event.data === 'reload') {
+    reloadPage()
   }
 }
 
-socket.onclose = event => {
+FERMO_LIVE.socket.onclose = event => {
   if (event.wasClean) {
     console.log('onclose clean event:', event)
   } else {
@@ -23,6 +27,6 @@ socket.onclose = event => {
   }
 }
 
-socket.onerror = error => {
+FERMO_LIVE.socket.onerror = error => {
   console.log('onerror error:', error)
 }
