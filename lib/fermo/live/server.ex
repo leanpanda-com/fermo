@@ -2,6 +2,15 @@ defmodule Fermo.Live.Server do
   import Plug.Conn
   import Mix.Fermo.Paths, only: [app_path: 0]
 
+  live_reload_js_path = Application.app_dir(:fermo, "priv/static/fermo-live.js")
+  @external_resource live_reload_js_path
+
+  @live_reload_js """
+  <script type="text/javascript">
+  #{File.read!(live_reload_js_path)}
+  </script>
+  """
+
   def init(_options) do
     {:ok} = FermoHelpers.build_assets()
     []
@@ -57,16 +66,10 @@ defmodule Fermo.Live.Server do
   defp inject_reload(html) do
     if has_body_close?(html) do
       [body | tail] = String.split(html, "</body>")
-      Enum.join([body, socket_connect_js() | tail], "\n")
+      Enum.join([body, @live_reload_js | tail], "\n")
     else
-      Enum.join([html, socket_connect_js()], "\n")
+      Enum.join([html, @live_reload_js], "\n")
     end
-  end
-
-  defp socket_connect_js do
-    """
-    <script type="text/javascript" src="/fermo-live.js"></script>
-    """
   end
 
   defp has_body_close?(html) do
