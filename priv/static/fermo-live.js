@@ -1,5 +1,6 @@
 const FERMO_LIVE = {
-  socketPath: 'ws://' + window.location.host + '/__fermo/ws/live-reload'
+  socketPath: 'ws://' + window.location.host + '/__fermo/ws/live-reload',
+  pingTimer: null
 }
 FERMO_LIVE.socket = new window.WebSocket(FERMO_LIVE.socketPath)
 
@@ -9,6 +10,9 @@ const reloadPage = () => {
 
 FERMO_LIVE.socket.onopen = e => {
   FERMO_LIVE.socket.send('subscribe:live-reload:' + window.location.pathname)
+  FERMO_LIVE.pingTimer = window.setInterval(() => {
+    FERMO_LIVE.socket.send(JSON.stringify({event: 'ping'}))
+  }, 10000)
 }
 
 FERMO_LIVE.socket.onmessage = (event) => {
@@ -19,6 +23,11 @@ FERMO_LIVE.socket.onmessage = (event) => {
 }
 
 FERMO_LIVE.socket.onclose = event => {
+  // Clean up ping timer
+  if(FERMO_LIVE.pingTimer) {
+    window.clearInterval(FERMO_LIVE.pingTimer)
+    FERMO_LIVE.pingTimer = null
+  }
   if (event.wasClean) {
     console.log('onclose clean event:', event)
   } else {
