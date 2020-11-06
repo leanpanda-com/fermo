@@ -4,7 +4,8 @@ defmodule Fermo do
   import Mix.Fermo.Paths, only: [source_path: 0]
 
   def start(_start_type, _args \\ []) do
-    {:ok} = FermoHelpers.start_link([:assets, :i18n])
+    {:ok, _pid} = Fermo.Assets.start_link()
+    {:ok, _pid} = I18n.start_link()
     {:ok, self()}
   end
 
@@ -17,12 +18,8 @@ defmodule Fermo do
       Module.register_attribute __MODULE__, :config, persist: true
       @config unquote(opts)
 
-      import FermoHelpers.Assets
-      import FermoHelpers.DateTime
-      import FermoHelpers.I18n
-      import FermoHelpers.Links
-      import FermoHelpers.String
-      import FermoHelpers.Text
+      import Fermo.Assets
+      import I18n
 
       def environment, do: "production" # TODO
     end
@@ -108,8 +105,8 @@ defmodule Fermo do
   def build(config) do
     config = put_in(config, [:stats, :build_started], Time.utc_now)
 
-    {:ok} = FermoHelpers.build_assets()
-    {:ok} = FermoHelpers.load_i18n()
+    {:ok} = Fermo.Assets.build()
+    {:ok} = Fermo.I18n.load()
 
     build_path = get_in(config, [:build_path])
     File.mkdir(build_path)
@@ -119,7 +116,6 @@ defmodule Fermo do
       |> post_config()
       |> copy_statics()
       |> Fermo.Sitemap.build()
-      |> Fermo.I18n.optionally_build_path_map()
       |> Fermo.Build.run()
 
     {:ok, config}
@@ -148,6 +144,7 @@ defmodule Fermo do
 
     config
     |> put_in([:pages], pages)
+    |> Fermo.I18n.optionally_build_path_map()
     |> put_in([:stats, :post_config_completed], Time.utc_now)
   end
 

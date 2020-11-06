@@ -1,4 +1,14 @@
 defmodule Fermo.I18n do
+  def load(path \\ "priv/locales/**/*.yml") do
+    files = Path.wildcard(path)
+    translations = Enum.reduce(files, %{}, fn (file, translations) ->
+      content = YamlElixir.read_from_file(file)
+      {:ok, atom_keys} = Morphix.atomorphiform(content)
+      DeepMerge.deep_merge(translations, atom_keys)
+    end)
+    {:ok} = I18n.put(translations)
+  end
+
   def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
     pages_with_locale_and_id = Enum.filter(
       config.pages,

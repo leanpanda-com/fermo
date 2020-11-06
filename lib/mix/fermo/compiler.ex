@@ -62,12 +62,8 @@ defmodule Mix.Fermo.Compiler do
         import Fermo.Partial
         require Fermo.YieldContent
         import Fermo.YieldContent
-        import FermoHelpers.Assets
-        import FermoHelpers.DateTime
-        import FermoHelpers.I18n
-        import FermoHelpers.Links
-        import FermoHelpers.String
-        import FermoHelpers.Text
+        import Fermo.Assets
+        import Fermo.I18n
 
         Enum.map(cfs_compiled, fn {key, cf_compiled} ->
           args = [:"#{key}", Macro.var(:params, nil), Macro.var(:context, nil)]

@@ -4,7 +4,7 @@ defmodule Fermo.Live.Dependencies do
   @name :fermo_dependencies
 
   def init(_opts) do
-    {:ok} = FermoHelpers.load_i18n()
+    {:ok} = Fermo.I18n.load()
     module = Mix.Fermo.Module.module!()
     IO.write "Requesting #{module} config... "
     {:ok, config} = module.config()
