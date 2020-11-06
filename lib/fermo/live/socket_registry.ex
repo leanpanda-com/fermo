@@ -39,7 +39,6 @@ defmodule Fermo.Live.SocketRegistry do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, registry) do
-    IO.puts "Process down"
     {:noreply, unsubscribe_pid(registry, pid)}
   end
   def handle_info(_info, registry), do: {:noreply, registry}
