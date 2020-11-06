@@ -77,6 +77,6 @@ defmodule Fermo.I18n do
   def default_locale(_), do: nil
 
   def first_locale(%{i18n: []}), do: nil
-  def first_locale(%{i18n: [locale, _rest]}), do: locale
+  def first_locale(%{i18n: [locale | _rest]}), do: locale
   def first_locale(_config), do: nil
 end
