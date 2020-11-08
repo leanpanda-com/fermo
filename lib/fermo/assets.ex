@@ -115,17 +115,6 @@ defmodule Fermo.Assets do
     "//localhost:#{@webpack_dev_server_port}/javascripts/#{name}.js"
   end
 
-  def static_stylesheet_path("https://" <> _path = url) do
-    url
-  end
-  def static_stylesheet_path(name) do
-    Webpack.Assets.path!("#{name}.css")
-  end
-
-  def live_stylesheet_path(name) do
-    "//localhost:#{@webpack_dev_server_port}/stylesheets/#{name}.css"
-  end
-
   defmacro stylesheet_link_tag(name) do
     quote do
       context = var!(context)
@@ -136,5 +125,16 @@ defmodule Fermo.Assets do
       end
       "<link href=\"#{url}\" media=\"all\" rel=\"stylesheet\" />"
     end
+  end
+
+  def static_stylesheet_path("https://" <> _path = url) do
+    url
+  end
+  def static_stylesheet_path(name) do
+    Webpack.Assets.path!("#{name}.css")
+  end
+
+  def live_stylesheet_path(name) do
+    "//localhost:#{@webpack_dev_server_port}/stylesheets/#{name}.css"
   end
 end
