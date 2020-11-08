@@ -62,6 +62,7 @@ defmodule Mix.Fermo.Compiler do
         import Fermo.Partial
         require Fermo.YieldContent
         import Fermo.YieldContent
+        require Fermo.Assets
         import Fermo.Assets
         import Fermo.I18n
 
