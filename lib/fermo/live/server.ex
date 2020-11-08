@@ -12,7 +12,6 @@ defmodule Fermo.Live.Server do
   """
 
   def init(_options) do
-    {:ok} = Fermo.Assets.build()
     []
   end
 
