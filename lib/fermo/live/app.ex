@@ -18,7 +18,8 @@ defmodule Fermo.Live.App do
       {Fermo.Live.Watcher, dirs: ["priv/source"]},
       {Fermo.Live.ChangeHandler, []},
       {Fermo.Live.Dependencies, []},
-      {Fermo.Live.SocketRegistry, []}
+      {Fermo.Live.SocketRegistry, []},
+      {Webpack.DevServer, []}
     ]
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 
