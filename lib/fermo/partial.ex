@@ -12,7 +12,7 @@ defmodule Fermo.Partial do
       if page[:live] do
         page_path = context.page.path
         template_source_path = apply(unquote(module), :template_source_path, [])
-        {:ok} = Fermo.Live.Dependencies.add_page_dependency(page_path, template_source_path)
+        {:ok} = Fermo.Live.Dependencies.add_page_dependency(page_path, :template, template_source_path)
       end
       opts = unquote(opts) || []
       po = unquote(param_overrides)
