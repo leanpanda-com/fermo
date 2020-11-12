@@ -36,7 +36,7 @@ defmodule Fermo.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev},
-      {:fermo_helpers, "~> 0.9.1"},
+      {:fermo_helpers, "~> 0.12.0"},
       {:file_system, ">= 0.0.0"},
       {:plug_cowboy, "~> 2.0"},
       {:slime, "~> 1.2.1"},
