@@ -55,10 +55,9 @@ defmodule Fermo.Live.Dependencies do
     {:reply, {:ok, pages}, state}
   end
 
-  def handle_call({:start_page, path, pid}, _from, state) do
+  def handle_call({:start_page, path}, _from, state) do
     state = state
     |> update_page(path, &(reset_page_dependencies(&1)))
-    |> Map.put(:server, pid)
 
     {:reply, {:ok}, state}
   end
