@@ -52,11 +52,7 @@ defmodule Fermo.Live.ChangeHandler do
   defp notify_sockets(relative_path) do
     {:ok, pages} = Fermo.Live.Dependencies.pages_by_dependency(:template, relative_path)
     Enum.each(pages, fn page ->
-      # TODO: move the following into SocketRegistry.reload(page.path)
-      subscribed = Fermo.Live.SocketRegistry.subscribed(page.path)
-      Enum.each(subscribed, fn pid ->
-        send(pid, {:reload})
-      end)
+      {:ok} = Fermo.Live.SocketRegistry.reload(page.path)
     end)
   end
 end

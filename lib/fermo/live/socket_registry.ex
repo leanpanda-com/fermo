@@ -23,6 +23,14 @@ defmodule Fermo.Live.SocketRegistry do
     GenServer.call(@name, {:subscribed, path})
   end
 
+  def reload(path) do
+    subscribed = subscribed(path)
+    Enum.each(subscribed, fn pid ->
+      send(pid, {:reload})
+    end)
+    {:ok}
+  end
+
   def handle_call({:subscribe, path, pid}, _from, registry) do
     subscribed = [pid | registry[path] || []]
     Process.monitor(pid)
