@@ -19,13 +19,26 @@ defmodule Fermo.Live.SocketRegistry do
     GenServer.call(@name, {:unsubscribe, pid})
   end
 
-  def subscribed(path) do
+  def subscribed(nil) do
+    subscribed()
+  end
+  def subscribed(paths) when is_list(paths) do
+    Enum.map(paths, &(subscribed(&1)))
+    |> List.flatten()
+  end
+  def subscribed(path) when is_binary(path) do
     GenServer.call(@name, {:subscribed, path})
+  end
+  def subscribed(%Regex{} = path) do
+    GenServer.call(@name, {:subscribed, path})
+  end
+  def subscribed() do
+    GenServer.call(@name, {:subscribed})
   end
 
   def reload(path) do
-    subscribed = subscribed(path)
-    Enum.each(subscribed, fn pid ->
+    subscribed(path)
+    |> Enum.each(fn pid ->
       send(pid, {:reload})
     end)
     {:ok}
@@ -42,8 +55,22 @@ defmodule Fermo.Live.SocketRegistry do
     {:reply, :unsubscribed, unsubscribe_pid(registry, pid)}
   end
 
-  def handle_call({:subscribed, path}, _from, registry) do
+  def handle_call({:subscribed, %Regex{} = match}, _from, registry) do
+    matching =
+      registry
+      |> Enum.filter(fn {path, _pids} -> String.match?(path, match) end)
+      |> List.flatten()
+
+    {:reply, matching, registry}
+  end
+  def handle_call({:subscribed, path}, _from, registry) when is_binary(path) do
     {:reply, Map.get(registry, path, []), registry}
+  end
+  def handle_call({:subscribed}, _from, registry) do
+    all_pids = Enum.map(registry, fn {_path, pids} -> pids end)
+    |> List.flatten()
+
+    {:reply, all_pids, registry}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, registry) do
