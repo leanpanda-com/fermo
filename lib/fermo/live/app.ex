@@ -16,11 +16,13 @@ defmodule Fermo.Live.App do
     Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
 
+    port = System.get_env("PORT") || 4001
+
     cowboy = {
       Plug.Cowboy,
       scheme: :http,
       plug: Server,
-      options: [dispatch: dispatch(), port: 4001]
+      options: [dispatch: dispatch(), port: port]
     }
 
     children = app_live_mode_servers() ++ [
