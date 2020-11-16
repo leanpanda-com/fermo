@@ -5,21 +5,16 @@ defmodule Fermo.Live.Dependencies do
 
   def init(_opts) do
     {:ok} = Fermo.I18n.load()
-    module = Mix.Fermo.Module.module!()
-    IO.write "Requesting #{module} config... "
-    {:ok, config} = module.config()
-    IO.puts "Done!"
-    IO.write "Running post config... "
-    config =
-      config
-      |> Fermo.post_config()
-      |> set_live_attributes()
-    IO.puts "Done!"
+    config = load_config()
     {:ok, %{config: config}}
   end
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, nil, name: @name)
+  end
+
+  def reinitialize() do
+    {:ok} = GenServer.call(@name, {:reinitialize})
   end
 
   def page_from_path(path) do
@@ -36,6 +31,11 @@ defmodule Fermo.Live.Dependencies do
 
   def add_page_dependency(path, type, value) do
     GenServer.call(@name, {:add_page_dependency, path, type, value})
+  end
+
+  def handle_call({:reinitialize}, _from, _state) do
+    config = load_config()
+    {:reply, {:ok}, %{config: config}}
   end
 
   def handle_call({:page_from_path, path}, _from, state) do
@@ -74,6 +74,20 @@ defmodule Fermo.Live.Dependencies do
     end)
 
     {:reply, {:ok}, state}
+  end
+
+  defp load_config() do
+    module = Mix.Fermo.Module.module!()
+    IO.write "Requesting #{module} config... "
+    {:ok, config} = module.config()
+    IO.puts "Done!"
+    IO.write "Running post config... "
+    config =
+      config
+      |> Fermo.post_config()
+      |> set_live_attributes()
+    IO.puts "Done!"
+    config
   end
 
   defp set_live_attributes(config) do
