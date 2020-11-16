@@ -3,6 +3,15 @@ defmodule Fermo.Live.App do
 
   use Application
 
+  alias Fermo.Live.{
+    ChangeHandler,
+    Dependencies,
+    Server,
+    Socket,
+    SocketRegistry,
+    Watcher
+  }
+
   def start(_type, _args) do
     Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
@@ -10,17 +19,18 @@ defmodule Fermo.Live.App do
     cowboy = {
       Plug.Cowboy,
       scheme: :http,
-      plug: Fermo.Live.Server,
+      plug: Server,
       options: [dispatch: dispatch(), port: 4001]
     }
     children = [
       cowboy,
-      {Fermo.Live.Watcher, dirs: ["priv/source"]},
-      {Fermo.Live.ChangeHandler, []},
-      {Fermo.Live.Dependencies, []},
-      {Fermo.Live.SocketRegistry, []},
+      {Watcher, dirs: ["priv/source"]},
+      {ChangeHandler, []},
+      {Dependencies, []},
+      {SocketRegistry, []},
       {Webpack.DevServer, []}
     ]
+
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 
     {:ok, pid}
@@ -37,8 +47,8 @@ defmodule Fermo.Live.App do
       {
         :_,
         [
-          {"/__fermo/ws/[...]", Fermo.Live.Socket, [name: :fermo_live_socket]},
-          {:_, Plug.Cowboy.Handler, {Fermo.Live.Server, Fermo.Live.Server.init([])}}
+          {"/__fermo/ws/[...]", Socket, [name: :fermo_live_socket]},
+          {:_, Plug.Cowboy.Handler, {Server, Server.init([])}}
         ]
       }
     ]
