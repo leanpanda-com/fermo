@@ -16,7 +16,7 @@ defmodule Fermo.Live.App do
     Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
 
-    port = System.get_env("PORT") || 4001
+    port = String.to_integer(System.get_env("PORT") || "4001")
 
     cowboy = {
       Plug.Cowboy,
