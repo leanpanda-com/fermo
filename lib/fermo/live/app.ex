@@ -22,7 +22,8 @@ defmodule Fermo.Live.App do
       plug: Server,
       options: [dispatch: dispatch(), port: 4001]
     }
-    children = [
+
+    children = app_live_mode_servers() ++ [
       cowboy,
       {Watcher, dirs: ["priv/source"]},
       {ChangeHandler, []},
@@ -52,5 +53,13 @@ defmodule Fermo.Live.App do
         ]
       }
     ]
+  end
+
+  # Allow projects to add children
+  defp app_live_mode_servers() do
+    case Application.fetch_env(:fermo, :live_mode_servers) do
+      :error -> []
+      {:ok, servers} -> servers
+    end
   end
 end
