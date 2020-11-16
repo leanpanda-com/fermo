@@ -30,6 +30,22 @@ See [Configuration](#configuration).
 $ mix fermo.build
 ```
 
+# Live Dev Mode
+
+Have pages reloaded when structure, style or content change.
+
+```sh
+$ FERMO_LIVE=true mix fermo.live
+```
+
+When pages are requested,
+the server injects a JS that starts a socket,
+on the Elixir side, the socket registers the path that
+the browser is visiting.
+
+When changes happen to pages that are being visited,
+the browser is told to reload the page via the websocket.
+
 # Capabilities
 
 * build your projects fast, using all available cores,
