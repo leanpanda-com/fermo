@@ -26,7 +26,7 @@ defmodule Webpack.Assets do
     end
   end
 
-  defp handle_build_result({_output, 0}) do
+  def load_manifest() do
     manifest = "build/manifest.json"
     |> File.read!
     |> Jason.decode!
@@ -41,6 +41,10 @@ defmodule Webpack.Assets do
     )
     GenServer.call(:assets, {:put, manifest})
     {:ok}
+  end
+
+  defp handle_build_result({_output, 0}) do
+    load_manifest()
   end
   defp handle_build_result({output, _exit_status}) do
     {:error, "External webpack pipeline failed to build\n\n#{output}"}

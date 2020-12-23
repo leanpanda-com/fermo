@@ -1,8 +1,8 @@
 defmodule Fermo.Assets do
   @webpack_dev_server_port 8080
 
-  def start_link() do
-    Webpack.Assets.start_link()
+  def start_link(args \\ []) do
+    Webpack.Assets.start_link(args)
   end
 
   def build() do
