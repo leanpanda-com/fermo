@@ -38,6 +38,8 @@ Have pages reloaded when structure, style or content change.
 $ FERMO_LIVE=true mix fermo.live
 ```
 
+The live site is available at http://localhost:4001/
+
 When pages are requested,
 the server injects a JS that starts a socket,
 on the Elixir side, the socket registers the path that
