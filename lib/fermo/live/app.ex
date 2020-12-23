@@ -41,6 +41,7 @@ defmodule Fermo.Live.App do
 
   def stop(state) do
     IO.puts "state: #{inspect(state, [pretty: true, width: 0])}"
+    Application.stop(:webpack_dev_server)
     Application.stop(:cowboy)
     Application.stop(:telemetry)
   end
