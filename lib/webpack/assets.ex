@@ -10,12 +10,12 @@ defmodule Webpack.Assets do
 
   @webpack_config_path "webpack.config.js"
 
-  def init(args) do
-    {:ok, args}
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, %{}, name: :assets)
   end
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, %{}, name: :assets)
+  def init(args) do
+    {:ok, args}
   end
 
   def build() do
