@@ -14,7 +14,7 @@ work with Elixir SLIM.
 
 # About Elixir
 
-[LINK A ELIXIR DOCS]
+TODO: LINK TO ELIXIR DOCS
 
 ## Data Structures
 
@@ -185,7 +185,25 @@ Middleman projects:
 
 # HOWTOs
 
+## Debugging
+
+If you want to set a breakpoint for interactive debugging,
+start the build like this:
+
+```sh
+$ iex -S mix fermo.build
+```
+
+and put this where you want your beakpoint:
+
+```elixir
+require IEx
+IEx.pry()
+```
+
 ## REST APIs
 
 If an API has a JSON Schema, use `json_hyperschema_client_builder`,
 which will generate a whole Elixir API library for you.
+
+See this example, which generate a REST API client for DatoCMS.
