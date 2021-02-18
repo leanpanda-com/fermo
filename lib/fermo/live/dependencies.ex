@@ -91,9 +91,11 @@ defmodule Fermo.Live.Dependencies do
   end
 
   defp set_live_attributes(config) do
+    fermo_live = Application.get_env(:fermo, :live, [])
+    pages_live = Keyword.get(fermo_live, :pages, true)
     pages = Enum.map(config.pages, fn page ->
       page
-      |> Map.put(:live, true)
+      |> Map.put(:live, pages_live)
       |> reset_page_dependencies()
     end)
 
