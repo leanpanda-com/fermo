@@ -22,6 +22,7 @@ defmodule Mix.Fermo.Compiler do
   end
 
   defp compile_file(template_project_path) do
+    IO.puts "Compiling #{template_project_path}"
     template_source_path = absolute_to_source(template_project_path)
 
     module = source_path_to_module(template_source_path)
