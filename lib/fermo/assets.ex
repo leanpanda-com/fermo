@@ -39,6 +39,11 @@ defmodule Fermo.Assets do
     Webpack.Assets.path!("fonts/#{filename}")
   end
 
+  defmacro image_path("https://" <> _path = url) do
+    quote do
+      static_image_path(unquote(url))
+    end
+  end
   defmacro image_path(name) do
     quote do
       context = var!(context)
@@ -50,7 +55,11 @@ defmodule Fermo.Assets do
     end
   end
 
-  defmacro image_tag(filename, attributes \\ []) do
+  defmacro image_tag(name, attributes \\ [])
+  defmacro image_tag("https://" <> _path = url, attributes) do
+    image_tag_with_attributes(url, attributes)
+  end
+  defmacro image_tag(filename, attributes) do
     quote do
       context = var!(context)
       url = if context[:page][:live] do
@@ -58,13 +67,16 @@ defmodule Fermo.Assets do
       else
         static_image_path(unquote(filename))
       end
-
-      attribs = Enum.map(unquote(attributes), fn ({k, v}) ->
-        "#{k}=\"#{v}\""
-      end)
-
-      "<img src=\"#{url}\" #{Enum.join(attribs, " ")}/>"
+      image_tag_with_attributes(url, unquote(attributes))
     end
+  end
+
+  defp image_tag_with_attributes(url, attributes) do
+    attribs = Enum.map(attributes, fn ({k, v}) ->
+      "#{k}=\"#{v}\""
+    end)
+
+    "<img src=\"#{url}\" #{Enum.join(attribs, " ")}/>"
   end
 
   def static_image_path("https://" <> _path = url) do
