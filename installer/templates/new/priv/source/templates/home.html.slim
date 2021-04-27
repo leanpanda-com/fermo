@@ -1,0 +1,19 @@
+elixir:
+  result = query!("""
+    query MyQuery($locale: String!) {
+      home(locale: $locale) {
+        title
+        abstract
+      }
+    }
+  """, %{locale: params.locale})
+
+  page = result[:home]
+
+header
+  .wrap
+    h1
+      = page.title
+
+section.wrap
+  = page.abstract
