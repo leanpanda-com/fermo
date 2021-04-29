@@ -1,9 +1,9 @@
 defmodule Fermo.New.MixProject do
   use Mix.Project
 
-  @fermo_mix_exs File.read!("../mix.exs")
-  @version hd(Regex.run(~r<@version\s+\"([^\"]+)\">, @fermo_mix_exs, capture: :all_but_first))
-  @elixir_version hd(Regex.run(~r<elixir:\s+\"([^\"]+)\">, @fermo_mix_exs, capture: :all_but_first))
+  # N.B.: Keep aligned with the versions in ../mix.exs
+  @version "0.13.5"
+  @elixir_version "~> 1.9"
   @scm_url "https://github.com/leanpanda.com/fermo"
 
   def project do
@@ -40,11 +40,16 @@ defmodule Fermo.New.MixProject do
 
   def deps do
     [
-      {:ex_doc, "~> 0.24", only: :docs}
+      {:ex_doc, "~> 0.24", only: :dev}
     ]
   end
 
   defp docs do
-    []
+    [
+      extras: ["README.md"],
+      homepage_url: @scm_url,
+      source_ref: "v#{@version}",
+      source_url: @scm_url
+    ]
   end
 end
