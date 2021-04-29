@@ -1,7 +1,7 @@
 defmodule Fermo.MixProject do
   use Mix.Project
 
-  @version "0.13.4"
+  @version "0.13.5"
   @git_origin "https://github.com/leanpanda-com/fermo"
 
   def project do

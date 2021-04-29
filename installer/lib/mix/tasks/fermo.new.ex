@@ -30,6 +30,9 @@ defmodule Mix.Tasks.Fermo.New do
     "lib/<%= project[:app] %>.ex",
     "mix.exs",
     "package.json",
+    "priv/source/javascripts/application.js",
+    "priv/source/layouts/layout.html.slim",
+    "priv/source/stylesheets/application.sass",
     "priv/source/templates/home.html.slim",
     "webpack.config.js"
   ]
@@ -56,7 +59,18 @@ defmodule Mix.Tasks.Fermo.New do
          {:ok, %Project{} = project} <- new_project(base_path),
          {:ok} <- ensure_directory(project),
          {:ok} <- create_files(project) do
-      IO.puts "Project created!"
+      IO.puts """
+        Project created!
+
+        Now:
+          cd #{base_path}
+          mix deps.get
+          mix compile
+          yarn
+          mix fermo.live
+
+        You'll need to create a DatoCMS site and set it's API key in .envrc
+      """
     else
       {:error, :bad_name, error} ->
         Mix.raise error

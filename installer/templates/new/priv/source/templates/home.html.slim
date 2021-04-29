@@ -1,6 +1,6 @@
 elixir:
   result = query!("""
-    query MyQuery($locale: String!) {
+    query MyQuery($locale: SiteLocale!) {
       home(locale: $locale) {
         title
         abstract

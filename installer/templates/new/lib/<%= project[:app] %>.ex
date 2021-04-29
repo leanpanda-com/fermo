@@ -8,7 +8,7 @@ defmodule <%= @project[:module] %> do
     i18n: [:en, :it],
     exclude: ["templates/*", "layouts/*", "javascripts/*", "stylesheets/*"]
   }
-  import Fermo, only: [page: 5]
+  import Fermo, only: [page: 4]
 
   use Helpers
 
@@ -21,16 +21,14 @@ defmodule <%= @project[:module] %> do
       config,
       "/templates/home.html.slim",
       "/index.html",
-      %{id: "home"},
-      %{locale: :it}
+      %{id: "home", locale: :en}
     )
 
     config = page(
       config,
       "/templates/home.html.slim",
-      "/index.html",
-      %{id: "home"},
-      %{locale: :it}
+      "/it/index.html",
+      %{id: "home", locale: :it}
     )
 
     {:ok, config}

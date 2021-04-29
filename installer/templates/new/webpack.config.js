@@ -1,4 +1,4 @@
-const ManifestPlugin = require('webpack-manifest-plugin')
+const {WebpackManifestPlugin} = require('webpack-manifest-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const webpack = require('webpack')
 
@@ -8,9 +8,9 @@ let assetNaming = null
 let cssFilenameTemplate = null
 let jsFilenameTemplate = null
 if (mode === 'production') {
-  assetNaming = '[path][name]-[hash:6].[ext]'
-  cssFilenameTemplate = 'stylesheets/[name]-[hash:6].css'
-  jsFilenameTemplate = 'javascripts/[name]-[hash:6].js'
+  assetNaming = '[path][name]-[chunkhash:6].[ext]'
+  cssFilenameTemplate = 'stylesheets/[name]-[chunkhash:6].css'
+  jsFilenameTemplate = 'javascripts/[name]-[chunkhash:6].js'
 } else {
   assetNaming = '[path][name].[ext]'
   cssFilenameTemplate = 'stylesheets/[name].css'
@@ -91,7 +91,7 @@ module.exports = {
           {
             loader: 'file-loader',
             options: {
-              name: '[path][name]-[hash:6].[ext]'
+              name: '[path][name]-[chunkhash:6].[ext]'
             }
           },
           {
@@ -107,7 +107,7 @@ module.exports = {
     }
   },
   plugins: [
-    new ManifestPlugin(),
+    new WebpackManifestPlugin({writeToFileEmit : true}),
     new MiniCssExtractPlugin({
       filename: cssFilenameTemplate
     })
