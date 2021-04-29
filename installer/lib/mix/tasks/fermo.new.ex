@@ -59,7 +59,7 @@ defmodule Mix.Tasks.Fermo.New do
          {:ok, %Project{} = project} <- new_project(base_path),
          {:ok} <- ensure_directory(project),
          {:ok} <- create_files(project) do
-      IO.puts """
+      Mix.shell().info("""
         Project created!
 
         Now:
@@ -70,7 +70,7 @@ defmodule Mix.Tasks.Fermo.New do
           mix fermo.live
 
         You'll need to create a DatoCMS site and set it's API key in .envrc
-      """
+      """)
     else
       {:error, :bad_name, error} ->
         Mix.raise error
@@ -125,9 +125,11 @@ defmodule Mix.Tasks.Fermo.New do
 
   defp create_file(path_template, context) do
     path = EEx.eval_string(path_template, context)
-    template_pathname = Path.join([File.cwd!(), "templates", "new", path_template])
+    root = Path.expand("../../../templates/new", __DIR__)
+    full_template_path = Path.join(root, path_template)
+    Mix.shell().info("Installing '#{path}'")
     content = EEx.eval_file(
-      template_pathname,
+      full_template_path,
       assigns: context
     )
     output_pathname = Path.join(context[:project].path, path)
