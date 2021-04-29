@@ -20,6 +20,7 @@ defmodule Mix.Tasks.Fermo.New do
 
   @version Mix.Project.config()[:version]
   @shortdoc "Creates a new Fermo v#{@version} project"
+  @config Mix.Project.config()
 
   @templates [
     "config/config.exs",
@@ -110,10 +111,9 @@ defmodule Mix.Tasks.Fermo.New do
   end
 
   defp generate_files(%Project{} = project) do
-    config = Mix.Project.config()
     context = [
       project: Map.from_struct(project),
-      config: Enum.into(config, %{}),
+      config: Enum.into(@config, %{}),
       mix: %{other_deps: @other_deps}
     ]
 
