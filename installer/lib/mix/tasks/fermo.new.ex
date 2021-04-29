@@ -16,11 +16,12 @@ defmodule Mix.Tasks.Fermo.New do
 
   use Mix.Task
   alias Fermo.New.Project
+  use Fermo.New.Generator
 
   @version Mix.Project.config()[:version]
   @shortdoc "Creates a new Fermo v#{@version} project"
 
-  @template_files [
+  @templates [
     "config/config.exs",
     "config/dev.exs",
     ".envrc",
@@ -58,7 +59,7 @@ defmodule Mix.Tasks.Fermo.New do
     with {:ok} <- check_name(base_path),
          {:ok, %Project{} = project} <- new_project(base_path),
          {:ok} <- ensure_directory(project),
-         {:ok} <- create_files(project) do
+         {:ok} <- generate_files(project) do
       Mix.shell().info("""
         Project created!
 
@@ -108,7 +109,7 @@ defmodule Mix.Tasks.Fermo.New do
     end
   end
 
-  defp create_files(%Project{} = project) do
+  defp generate_files(%Project{} = project) do
     config = Mix.Project.config()
     context = [
       project: Map.from_struct(project),
@@ -116,26 +117,22 @@ defmodule Mix.Tasks.Fermo.New do
       mix: %{other_deps: @other_deps}
     ]
 
-    Enum.each(@template_files, fn path_template ->
-      {:ok} = create_file(path_template, context)
+    Enum.each(@templates, fn template ->
+      {:ok} = generate_file(template, context)
     end)
 
     {:ok}
   end
 
-  defp create_file(path_template, context) do
-    path = EEx.eval_string(path_template, context)
-    root = Path.expand("../../../templates/new", __DIR__)
-    full_template_path = Path.join(root, path_template)
-    Mix.shell().info("Installing '#{path}'")
-    content = EEx.eval_file(
-      full_template_path,
-      assigns: context
-    )
+  defp generate_file(template, context) do
+    content = render(template, context)
+
+    path = EEx.eval_string(template, context)
     output_pathname = Path.join(context[:project].path, path)
-    file_path = Path.dirname(output_pathname)
-    File.mkdir_p!(file_path)
-    File.write!(output_pathname, content)
+
+    create_directory(Path.dirname(output_pathname))
+    create_file(output_pathname, content)
+
     {:ok}
   end
 end
