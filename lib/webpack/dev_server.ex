@@ -18,7 +18,7 @@ defmodule Webpack.DevServer do
   def init(_args) do
     IO.puts "Starting Webpack dev server..."
     port = Port.open(
-      {:spawn, "yarn run webpack-dev-server"},
+      {:spawn, "yarn run webpack serve"},
       [{:env, [{'NODE_ENV', 'development'}]}]
     )
     IO.puts "port: #{inspect(port, [pretty: true, width: 0])}"

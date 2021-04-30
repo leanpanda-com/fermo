@@ -2,29 +2,21 @@
 
 A static site generator, build for speed and flexibility.
 
-# Usage
+# Project Creation
 
-1. Create an Elixir project:
-
-```sh
-$ mix new myProject
-```
-
-2. Modify `mix.exs`
-
-See [Mix configuration](#mix-configuration).
-
-3. Get dependencies:
+Install the project generator:
 
 ```sh
-$ mix deps.get
+$ mix archive.install hex fermo_new
 ```
 
-4. Create `lib/{{project name}}.ex`
+Generate the project:
 
-See [Configuration](#configuration).
+```sh
+$ mix fermo.new PATH
+```
 
-5. Build the project:
+Build the project:
 
 ```sh
 $ mix fermo.build
@@ -35,7 +27,7 @@ $ mix fermo.build
 Have pages reloaded when structure, style or content change.
 
 ```sh
-$ FERMO_LIVE=true mix fermo.live
+$ mix fermo.live
 ```
 
 The live site is available at http://localhost:4001/
