@@ -1,7 +1,6 @@
 defmodule Fermo.New.Generator do
   defmacro __using__(_env) do
     quote do
-      import Mix.Generator
       @before_compile unquote(__MODULE__)
     end
   end

@@ -42,14 +42,19 @@ defmodule Fermo.New do
     {:fermo_datocms_graphql_client, "~> 0.14.3"}
   """
 
+  @file_module Application.get_env(:fermo_new, :file_module, File)
+  @mix Application.get_env(:fermo_new, :mix, Mix)
+  @mix_generator Application.get_env(:fermo_new, :mix_generator, Mix.Generator)
+  @mix_tasks_help Application.get_env(:fermo_new, :mix_tasks_help, Mix.Tasks.Help)
+
   @callback run([String.t()]) :: {:ok}
   def run(argv) do
     with {:ok, options} <- OptionParser.run(argv),
          {:ok, %Project{} = project} <- Project.build(options.base_path),
-         {:ok} <- ensure_directory(project),
+         {:ok} <- check_directory(project),
          {:ok, context} <- build_context(project),
          {:ok} <- generate_files(context) do
-      Mix.shell().info("""
+      @mix.shell().info("""
         Project created!
 
         Now:
@@ -64,19 +69,18 @@ defmodule Fermo.New do
 
       {:ok}
     else
-      {:error, :bad_args, _message} ->
-        Mix.Tasks.Help.run(["fermo.new"])
+      {:error, :bad_args} ->
+        @mix_tasks_help.run(["fermo.new"])
       {:error, :bad_name, error} ->
-        Mix.raise error
+        @mix.raise error
       {:error, :directory_not_empty, base_path} ->
-        Mix.raise "The directory #{base_path} is not empty"
+        @mix.raise "The directory #{base_path} is not empty"
     end
   end
 
-  defp ensure_directory(%Project{path: path}) do
-    case File.ls(path) do
+  defp check_directory(%Project{path: path}) do
+    case @file_module.ls(path) do
       {:error, :enoent} ->
-        File.mkdir_p(path)
         {:ok}
       [] ->
         {:ok}
@@ -109,8 +113,8 @@ defmodule Fermo.New do
     path = EEx.eval_string(template, context)
     output_pathname = Path.join(context[:project].path, path)
 
-    create_directory(Path.dirname(output_pathname))
-    create_file(output_pathname, content)
+    @mix_generator.create_directory(Path.dirname(output_pathname))
+    @mix_generator.create_file(output_pathname, content)
 
     {:ok}
   end
