@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Fermo.New do
   """
 
   use Mix.Task
-  alias Fermo.New.Project
+  alias Fermo.New.{OptionParser, Project}
   use Fermo.New.Generator
 
   @version Mix.Project.config()[:version]
@@ -47,25 +47,17 @@ defmodule Mix.Tasks.Fermo.New do
 
   @impl true
   def run(argv) do
-    case OptionParser.parse(argv, strict: []) do
-      {_opts, []} ->
-        Mix.Tasks.Help.run(["fermo.new"])
-
-      {[], [base_path], []} ->
-        generate(base_path)
-    end
-  end
-
-  defp generate(base_path) do
-    with {:ok} <- check_name(base_path),
-         {:ok, %Project{} = project} <- new_project(base_path),
+    with {:ok, options} <- OptionParser.run(argv),
+         {:ok} <- check_name(options.base_path),
+         {:ok, %Project{} = project} <- new_project(options.base_path),
          {:ok} <- ensure_directory(project),
-         {:ok} <- generate_files(project) do
+         {:ok, context} <- build_context(project),
+         {:ok} <- generate_files(context) do
       Mix.shell().info("""
         Project created!
 
         Now:
-          cd #{base_path}
+          cd #{options.base_path}
           mix deps.get
           mix compile
           yarn
@@ -74,9 +66,11 @@ defmodule Mix.Tasks.Fermo.New do
         You'll need to create a DatoCMS site and set it's API key in .envrc
       """)
     else
+      {:error, :bad_args, _message} ->
+        Mix.Tasks.Help.run(["fermo.new"])
       {:error, :bad_name, error} ->
         Mix.raise error
-      {:error, :directory_not_empty} ->
+      {:error, :directory_not_empty, base_path} ->
         Mix.raise "The directory #{base_path} is not empty"
     end
   end
@@ -106,17 +100,21 @@ defmodule Mix.Tasks.Fermo.New do
       [] ->
         {:ok}
       _ ->
-        {:error, :directory_not_empty}
+        {:error, :directory_not_empty, path}
     end
   end
 
-  defp generate_files(%Project{} = project) do
+  defp build_context(%Project{} = project) do
     context = [
       project: Map.from_struct(project),
       config: Enum.into(@config, %{}),
       mix: %{other_deps: @other_deps}
     ]
 
+    {:ok, context}
+  end
+
+  defp generate_files(context) do
     Enum.each(@templates, fn template ->
       {:ok} = generate_file(template, context)
     end)
