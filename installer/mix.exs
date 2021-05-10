@@ -12,6 +12,7 @@ defmodule Fermo.New.MixProject do
       start_permanent: Mix.env() == :prod,
       version: @version,
       elixir: @elixir_version,
+      elixirc_paths: elixirc_paths(Mix.env),
       deps: deps(),
       package: [
         maintainers: ["Joe Yates"],
@@ -34,13 +35,20 @@ defmodule Fermo.New.MixProject do
 
   def application do
     [
-      extra_applications: [:eex]
+      extra_applications: extra_applications(Mix.env()),
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_env), do: ["lib"]
+
+  defp extra_applications(:test), do: [:eex, :mox]
+  defp extra_applications(_env), do: [:eex]
+
   def deps do
     [
-      {:ex_doc, "~> 0.24", only: :dev}
+      {:ex_doc, "~> 0.24", only: :dev},
+      {:mox, ">= 0.0.0", only: :test, runtime: false}
     ]
   end
 
