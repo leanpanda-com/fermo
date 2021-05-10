@@ -9,6 +9,7 @@ defmodule Fermo.I18n do
     {:ok} = I18n.put(translations)
   end
 
+  def optionally_build_path_map(%{i18n: nil} = config), do: config
   def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
     pages_with_locale_and_id = Enum.filter(
       config.pages,
@@ -20,11 +21,7 @@ defmodule Fermo.I18n do
     path_locale_id = Enum.map(
       pages_with_locale_and_id,
       fn page ->
-        if is_atom(page.options.locale) do
-          %{path: page.path, id: page.options.id, locale: page.options.locale}
-        else
-          %{path: page.path, id: page.options.id, locale: String.to_atom(page.options.locale)}
-        end
+        %{path: page.path, id: page.options.id, locale: atom(page.options.locale)}
       end
     )
 
@@ -79,4 +76,7 @@ defmodule Fermo.I18n do
   def first_locale(%{i18n: []}), do: nil
   def first_locale(%{i18n: [locale | _rest]}), do: locale
   def first_locale(_config), do: nil
+
+  defp atom(x) when is_atom(x), do: x
+  defp atom(x), do: String.to_atom(x)
 end
