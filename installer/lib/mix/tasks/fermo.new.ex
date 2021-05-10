@@ -48,8 +48,7 @@ defmodule Mix.Tasks.Fermo.New do
   @impl true
   def run(argv) do
     with {:ok, options} <- OptionParser.run(argv),
-         {:ok} <- check_name(options.base_path),
-         {:ok, %Project{} = project} <- new_project(options.base_path),
+         {:ok, %Project{} = project} <- Project.build(options.base_path),
          {:ok} <- ensure_directory(project),
          {:ok, context} <- build_context(project),
          {:ok} <- generate_files(context) do
@@ -73,23 +72,6 @@ defmodule Mix.Tasks.Fermo.New do
       {:error, :directory_not_empty, base_path} ->
         Mix.raise "The directory #{base_path} is not empty"
     end
-  end
-
-  defp check_name(name) do
-    if name =~ Regex.recompile!(~r/^[a-z][\w_]*$/) do
-      {:ok}
-    else
-      {:error, :bad_name, "The app name '#{name}' is incorrect. The name must start with a lower-case letter and contain only alphanumeric characters and underscores"}
-    end
-  end
-
-  defp new_project(path) do
-    project = %Project{
-      app: String.to_atom(path),
-      module: Macro.camelize(path),
-      path: path
-    }
-    {:ok, project}
   end
 
   defp ensure_directory(%Project{path: path}) do
