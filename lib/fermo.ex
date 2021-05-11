@@ -27,20 +27,8 @@ defmodule Fermo do
   defmacro __before_compile__(_env) do
     quote do
       def initial_config() do
-        config = hd(__MODULE__.__info__(:attributes)[:config])
-
-        build_path = config[:build_path] || "build"
-        pages = config[:pages] || []
-        statics = config[:statics] || []
-
-        config
-        |> put_in([:build_path], build_path)
-        |> put_in([:pages], pages)
-        |> put_in([:statics], statics)
-        |> Fermo.Localizable.add()
-        |> Fermo.Simple.add()
-        |> put_in([:stats], %{})
-        |> put_in([:stats, :start], Time.utc_now)
+        hd(__MODULE__.__info__(:attributes)[:config])
+        |> Fermo.Config.initial()
       end
     end
   end

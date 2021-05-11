@@ -2,6 +2,7 @@ defmodule Fermo.Localizable do
   import Fermo.I18n, only: [root_locale: 1]
   import Mix.Fermo.Paths, only: [source_path: 0]
 
+  @callback add(Map.t()) :: Map.t()
   def add(%{i18n: _i18n} = config) do
     root_locale = root_locale(config)
     locales = config.i18n
