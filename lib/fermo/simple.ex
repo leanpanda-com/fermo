@@ -29,8 +29,8 @@ defmodule Fermo.Simple do
       if skip do
         config
       else
-        target = Fermo.template_to_target(template, as_index_html: true)
-        Fermo.add_page(config, template, target, %{})
+        target = Fermo.Paths.template_to_target(template, as_index_html: true)
+        Fermo.Config.add_page(config, template, target, %{})
       end
     end)
   end

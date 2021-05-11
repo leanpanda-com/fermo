@@ -84,7 +84,7 @@ defmodule Fermo.Live.Dependencies do
     IO.write "Running post config... "
     config =
       config
-      |> Fermo.post_config()
+      |> Fermo.Config.post_config()
       |> set_live_attributes()
     IO.puts "Done!"
     config

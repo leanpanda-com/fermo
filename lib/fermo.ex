@@ -34,58 +34,11 @@ defmodule Fermo do
   end
 
   def page(config, template, target, params \\ nil, options \\ nil) do
-    Fermo.add_page(config, template, target, params, options)
+    Fermo.Config.add_page(config, template, target, params, options)
   end
 
   def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
     Fermo.Pagination.paginate(config, template, options, context, fun)
-  end
-
-  def template_to_target(template, opts) do
-    String.replace(template, ".slim", "")
-    |> path_to_target(opts)
-  end
-
-  def path_to_target(path, opts \\ [])
-  def path_to_target(path, as_index_html: false), do: path
-  def path_to_target(path, _opts) do
-    cond do
-      path == "index.html" -> path
-      String.ends_with?(path, "/index.html") -> path
-      String.ends_with?(path, ".html") ->
-        String.replace(path, ".html", "/index.html")
-      true ->
-        path <> "/index.html"
-    end
-  end
-
-  def target_to_path(target) do
-    cond do
-      target == "index.html" -> "/"
-      String.ends_with?(target, "/index.html") ->
-        String.replace(target, "index.html", "")
-      true -> target
-    end
-  end
-
-  def add_page(config, template, target, params \\ %{}, options \\ %{}) do
-    pages = Map.get(config, :pages, [])
-    page = page_from(template, target, params, options)
-    put_in(config, [:pages], pages ++ [page])
-  end
-
-  def add_static(config, source, target) do
-    statics = Map.get(config, :statics)
-    put_in(config, [:statics], statics ++ [%{source: source, target: target}])
-  end
-
-  def page_from(template, target, params \\ %{}, options \\ %{}) do
-    %{
-      template: template,
-      target: target,
-      params: params,
-      options: options
-    }
   end
 
   def build(config) do
@@ -99,7 +52,7 @@ defmodule Fermo do
 
     config =
       config
-      |> post_config()
+      |> Fermo.Config.post_config()
       |> copy_statics()
       |> Fermo.Sitemap.build()
       |> Fermo.Build.run()
@@ -116,72 +69,5 @@ defmodule Fermo do
       Fermo.File.copy(source_pathname, target_pathname)
     end)
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
-  end
-
-  def post_config(config) do
-    pages = Enum.map(
-      config.pages,
-      fn page ->
-        page
-        |> set_path(config)
-        |> merge_default_options(config)
-      end
-    )
-
-    config
-    |> put_in([:pages], pages)
-    |> Fermo.I18n.optionally_build_path_map()
-    |> put_in([:stats, :post_config_completed], Time.utc_now)
-  end
-
-  def set_path(page, config) do
-    %{template: template, target: supplied_target} = page
-    module = Fermo.Template.module_for_template(template)
-    context = Fermo.Template.build_context(module, template, page)
-    params = Fermo.Template.params_for(module, page)
-    path_override = apply(module, :content_for, [:path, params, context])
-    # This depends on the default content_for returning "" and not nil
-    [target, path] = if path_override == "" do
-      [supplied_target, target_to_path(supplied_target)]
-    else
-      # Avoid extra whitespace introduced by templating
-      path = String.replace(path_override, ~r/\n/, "")
-      [path_to_target(path, as_index_html: true), path]
-    end
-
-    pathname = Path.join(config.build_path, target)
-
-    page
-    |> put_in([:target], target)
-    |> put_in([:path], path)
-    |> put_in([:pathname], pathname)
-  end
-
-  def merge_default_options(page, config) do
-    template = page.template
-    module = Fermo.Template.module_for_template(template)
-    defaults = Fermo.Template.defaults_for(module)
-
-    layout = if Map.has_key?(defaults, "layout") do
-      if defaults["layout"] do
-        defaults["layout"] <> ".html.slim"
-      else
-        defaults["layout"]
-      end
-    else
-      if Map.has_key?(config, :layout) do
-        config.layout
-      else
-        "layouts/layout.html.slim"
-      end
-    end
-
-    options =
-      defaults
-      |> Map.merge(page.options || %{})
-      |> put_in([:module], module)
-      |> put_in([:layout], layout)
-
-    put_in(page, [:options], options)
   end
 end

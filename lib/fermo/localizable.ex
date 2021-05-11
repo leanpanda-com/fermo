@@ -17,14 +17,14 @@ defmodule Fermo.Localizable do
     Enum.reduce(templates, config, fn (template, config) ->
       if String.starts_with?(template, "localizable/") do
         target = String.replace_prefix(template, "localizable/", "")
-        target = Fermo.template_to_target(target, as_index_html: true)
+        target = Fermo.Paths.template_to_target(target, as_index_html: true)
         Enum.reduce(locales, config, fn (locale, config) ->
           localized_target = if locale == root_locale do
               "/#{target}"
             else
               "/#{locale}/#{target}"
             end
-          Fermo.add_page(config, template, localized_target, %{}, %{locale: locale})
+          Fermo.Config.add_page(config, template, localized_target, %{}, %{locale: locale})
         end)
       else
         config

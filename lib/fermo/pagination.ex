@@ -47,7 +47,7 @@ defmodule Fermo.Pagination do
         {%{pagination: pagination}, context}
       end
 
-      Fermo.page_from(
+      Fermo.Config.page_from(
         template,
         page_path(pagination),
         prms,
