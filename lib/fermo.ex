@@ -20,8 +20,6 @@ defmodule Fermo do
 
       import Fermo.Assets
       import I18n
-
-      def environment, do: "production" # TODO
     end
   end
 
