@@ -24,6 +24,13 @@ defmodule Fermo.MixProject do
         main: "Fermo",
         source_ref: "v#{@version}",
         source_url: @git_origin
+      ],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
       ]
     ]
   end
@@ -38,6 +45,7 @@ defmodule Fermo.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev},
+      {:excoveralls, ">= 0.0.0", only: :test},
       {:fermo_helpers, "~> 0.12.0"},
       {:file_system, ">= 0.0.0"},
       {:plug_cowboy, "~> 2.0"},
