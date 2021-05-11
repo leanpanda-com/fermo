@@ -1,6 +1,8 @@
 defmodule Fermo.Config do
+  @i18n Application.get_env(:fermo, :i18n, Fermo.I18n)
   @localizable Application.get_env(:fermo, :localizable, Fermo.Localizable)
   @simple Application.get_env(:fermo, :simple, Fermo.Simple)
+  @template Application.get_env(:fermo, :template, Fermo.Template)
 
   def initial(config) do
     build_path = config[:build_path] || "build"
@@ -29,7 +31,7 @@ defmodule Fermo.Config do
 
     config
     |> put_in([:pages], pages)
-    |> Fermo.I18n.optionally_build_path_map()
+    |> @i18n.optionally_build_path_map()
     |> put_in([:stats, :post_config_completed], Time.utc_now)
   end
 
@@ -55,10 +57,10 @@ defmodule Fermo.Config do
 
   defp set_path(page, config) do
     %{template: template, target: supplied_target} = page
-    module = Fermo.Template.module_for_template(template)
-    context = Fermo.Template.build_context(module, template, page)
-    params = Fermo.Template.params_for(module, page)
-    path_override = apply(module, :content_for, [:path, params, context])
+    module = @template.module_for_template(template)
+    context = @template.build_context(module, template, page)
+    params = @template.params_for(module, page)
+    path_override = @template.content_for(module, [:path, params, context])
     # This depends on the default content_for returning "" and not nil
     [target, path] = if path_override == "" do
       [supplied_target, Fermo.Paths.target_to_path(supplied_target)]
@@ -78,8 +80,8 @@ defmodule Fermo.Config do
 
   defp merge_default_options(page, config) do
     template = page.template
-    module = Fermo.Template.module_for_template(template)
-    defaults = Fermo.Template.defaults_for(module)
+    module = @template.module_for_template(template)
+    defaults = @template.defaults_for(module)
 
     layout = if Map.has_key?(defaults, "layout") do
       if defaults["layout"] do
@@ -97,7 +99,7 @@ defmodule Fermo.Config do
 
     options =
       defaults
-      |> Map.merge(page.options || %{})
+      |> Map.merge(page[:options] || %{})
       |> put_in([:module], module)
       |> put_in([:layout], layout)
 

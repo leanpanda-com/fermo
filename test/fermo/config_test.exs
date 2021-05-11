@@ -6,24 +6,55 @@ defmodule Fermo.ConfigTest do
 
   setup :verify_on_exit!
 
-  setup context do
-    build_path = Map.get(context, :build_path, nil)
-    pages = Map.get(context, :pages, nil)
-    statics = Map.get(context, :statics, nil)
+  describe "add_page/5" do
+    setup do
+      config = %{pages: []}
 
-    config = %{
-      build_path: build_path,
-      pages: pages,
-      statics: statics
-    }
+      %{config: config}
+    end
 
-    stub(Fermo.LocalizableMock, :add, fn config -> config end)
-    stub(Fermo.SimpleMock, :add, fn config -> config end)
+    test "it adds a page", context do
+      config = Config.add_page(context.config, "template", "target", "params", "options")
 
-    Map.merge(context, %{config: config})
+      page = hd(config.pages)
+      assert page == %{template: "template", target: "target", params: "params", options: "options"}
+    end
+  end
+
+  describe "add_static/3" do
+    test "it adds a static page" do
+      config = Config.add_static(%{statics: []}, "source", "target")
+
+      assert hd(config.statics) == %{source: "source", target: "target"}
+    end
+  end
+
+  describe "page_from/4" do
+    test "it returns the page" do
+      assert Config.page_from("a", "b", "c", "d") == %{template: "a", target: "b", params: "c", options: "d"}
+    end
   end
 
   describe "initial/1" do
+    setup context do
+      build_path = Map.get(context, :build_path, nil)
+      pages = Map.get(context, :pages, nil)
+      statics = Map.get(context, :statics, nil)
+      stats = Map.get(context, :stats, nil)
+
+      config = %{
+        build_path: build_path,
+        pages: pages,
+        stats: stats,
+        statics: statics
+      }
+
+      stub(Fermo.LocalizableMock, :add, fn config -> config end)
+      stub(Fermo.SimpleMock, :add, fn config -> config end)
+
+      Map.merge(context, %{config: config})
+    end
+
     test "when not already set, it sets the build_path", context do
       config = Config.initial(context.config)
 
@@ -83,6 +114,129 @@ defmodule Fermo.ConfigTest do
       config = Config.initial(context.config)
 
       assert Map.has_key?(config.stats, :start)
+    end
+  end
+
+  describe "post_config/1" do
+    setup context do
+      defaults = Map.get(context, :defaults, %{})
+      # This depends on the default content_for returning "" and not nil
+      pages = Map.get(context, :pages, [%{template: "mock_template", target: "target", options: %{foo: :bar}}])
+      content_for_path = Map.get(context, :content_for_path, "")
+
+      stub(Fermo.TemplateMock, :module_for_template, fn _ -> "module" end)
+      stub(Fermo.TemplateMock, :build_context, fn _, _, _ -> %{} end)
+      stub(Fermo.TemplateMock, :params_for, fn _, _ -> %{} end)
+      stub(Fermo.TemplateMock, :content_for, fn _, [:path, _, _] -> content_for_path end)
+      stub(Fermo.TemplateMock, :defaults_for, fn _ -> defaults end)
+      stub(Fermo.I18nMock, :optionally_build_path_map, fn config -> config end)
+
+      config = %{
+        build_path: "foo",
+        pages: pages,
+        stats: [],
+        statics: []
+      }
+
+      config = if Map.has_key?(context, :layout) do
+        Map.put(config, :layout, context.layout)
+      else
+        config
+      end
+
+      Map.merge(context, %{config: config})
+    end
+
+    test "it sets the page path", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.path == "target"
+    end
+
+    test "it sets the page target", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.target == "target"
+    end
+
+    @tag content_for_path: "ciao"
+    test "when the template overrides the path, it sets that path", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.path == "ciao"
+    end
+
+    @tag content_for_path: "ciao"
+    test "when the template overrides the path, it uses that path for the target", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.target == "ciao/index.html"
+    end
+
+    @tag defaults: %{baz: :qux}
+    test "it merges page options with defaults", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.baz == :qux
+    end
+
+    test "it sets page layouts", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.layout == "layouts/layout.html.slim"
+    end
+
+    @tag defaults: %{"layout" => "custom"}
+    test "it uses any layout set in defaults", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.layout == "custom.html.slim"
+    end
+
+    @tag defaults: %{"layout" => nil}
+    test "it accepts a nil layout set in defaults", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.layout == nil
+    end
+
+    @tag layout: "foo"
+    test "it uses any layout set in config", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.layout == "foo"
+    end
+
+    test "it sets the module", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.options.module == "module"
+    end
+
+    test "it builds localized paths", context do
+      expect(Fermo.I18nMock, :optionally_build_path_map, fn config -> config end)
+
+      Config.post_config(context.config)
     end
   end
 end
