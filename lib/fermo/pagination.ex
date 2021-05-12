@@ -18,6 +18,7 @@ defmodule Fermo.Pagination do
     first: String.t()
   }
 
+  @callback paginate(Map.t(), String.t(), Map.t(), Map.t(), function()) :: Map.t()
   def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
     base = options.base
     items = options.items

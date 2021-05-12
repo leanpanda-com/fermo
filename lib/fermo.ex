@@ -1,7 +1,8 @@
 defmodule Fermo do
-  require EEx
-  require Slime
-  import Mix.Fermo.Paths, only: [source_path: 0]
+  @moduledoc false
+
+  @build Application.get_env(:fermo, :build, Fermo.Build)
+  @pagination Application.get_env(:fermo, :pagination, Fermo.Pagination)
 
   def start(_start_type, _args \\ []) do
     {:ok, _pid} = Fermo.Assets.start_link()
@@ -38,36 +39,10 @@ defmodule Fermo do
   end
 
   def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do
-    Fermo.Pagination.paginate(config, template, options, context, fun)
+    @pagination.paginate(config, template, options, context, fun)
   end
 
   def build(config) do
-    config = put_in(config, [:stats, :build_started], Time.utc_now)
-
-    {:ok} = Fermo.Assets.build()
-    {:ok} = Fermo.I18n.load()
-
-    build_path = get_in(config, [:build_path])
-    File.mkdir(build_path)
-
-    config =
-      config
-      |> Fermo.Config.post_config()
-      |> copy_statics()
-      |> Fermo.Sitemap.build()
-      |> Fermo.Build.run()
-
-    {:ok, config}
-  end
-
-  defp copy_statics(config) do
-    statics = config[:statics]
-    build_path = get_in(config, [:build_path])
-    Enum.each(statics, fn (%{source: source, target: target}) ->
-      source_pathname = Path.join(source_path(), source)
-      target_pathname = Path.join(build_path, target)
-      Fermo.File.copy(source_pathname, target_pathname)
-    end)
-    put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
+    @build.run(config)
   end
 end
