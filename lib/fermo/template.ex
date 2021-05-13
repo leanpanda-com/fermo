@@ -2,7 +2,7 @@ defmodule Fermo.Template do
   import Fermo.Naming, only: [source_path_to_module: 1]
   import Mix.Fermo.Paths, only: [absolute_to_source: 1]
 
-  @callback defaults_for(module()) :: Map.t()
+  @callback defaults_for(module()) :: map()
   def defaults_for(module) do
     apply(module, :defaults, [])
     |> Enum.into(
@@ -13,7 +13,7 @@ defmodule Fermo.Template do
     )
   end
 
-  @callback params_for(module(), Map.t()) :: Map.t()
+  @callback params_for(module(), map()) :: map()
   def params_for(module, page) do
     defaults = defaults_for(module)
     Map.merge(defaults, page.params)
@@ -24,7 +24,7 @@ defmodule Fermo.Template do
     apply(module, :call, [params, context])
   end
 
-  @callback build_context(module(), String.t(), Map.t()) :: Map.t()
+  @callback build_context(module(), String.t(), map()) :: map()
   def build_context(module, template, page) do
     env = System.get_env()
     %{

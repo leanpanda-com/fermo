@@ -9,7 +9,7 @@ defmodule Fermo.I18n do
     {:ok} = I18n.put(translations)
   end
 
-  @callback optionally_build_path_map(Map.t()) :: Map.t()
+  @callback optionally_build_path_map(map()) :: map()
   def optionally_build_path_map(%{i18n: nil} = config), do: config
   def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
     pages_with_locale_and_id = Enum.filter(

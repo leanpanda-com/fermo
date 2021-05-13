@@ -1,7 +1,7 @@
 defmodule Fermo.New.OptionParser do
   @strict [locales: :string]
 
-  @callback run([String.t()]) :: {:ok, Map.t()} | {:error, atom(), String.t()}
+  @callback run([String.t()]) :: {:ok, map()} | {:error, atom(), String.t()}
   @doc ~S"""
   Parse command-line arguments
 

@@ -9,7 +9,7 @@ defmodule Fermo.Simple do
 
   import Mix.Fermo.Paths, only: [source_path: 0]
 
-  @callback add(Map.t()) :: Map.t()
+  @callback add(map()) :: map()
   def add(config) do
     exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->

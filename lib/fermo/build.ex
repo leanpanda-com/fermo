@@ -3,7 +3,7 @@ defmodule Fermo.Build do
 
   import Mix.Fermo.Paths, only: [source_path: 0]
 
-  @callback run(Map.t()) :: {:ok, Map.t()}
+  @callback run(map()) :: {:ok, map()}
   def run(config) do
     # TODO: check if Webpack assets are ready before building HTML
     # TODO: avoid passing config into tasks - decide the layout beforehand
