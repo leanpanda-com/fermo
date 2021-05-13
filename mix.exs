@@ -16,6 +16,7 @@ defmodule Fermo.MixProject do
       package: package(),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env),
       consolidate_protocols: Mix.env() != :test,
       deps: deps(),
       docs: [
@@ -37,10 +38,16 @@ defmodule Fermo.MixProject do
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: extra_applications(Mix.env()),
       mod: {Fermo, []}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_env), do: ["lib"]
+
+  defp extra_applications(:test), do: [:logger, :mox]
+  defp extra_applications(_env), do: [:logger]
 
   defp deps do
     [
@@ -48,6 +55,7 @@ defmodule Fermo.MixProject do
       {:excoveralls, ">= 0.0.0", only: :test},
       {:fermo_helpers, "~> 0.12.0"},
       {:file_system, ">= 0.0.0"},
+      {:mox, ">= 0.0.0", only: :test, runtime: false},
       {:plug_cowboy, "~> 2.0"},
       {:slime, "~> 1.2.1"},
       {:yaml_elixir, "~> 1.3.0"}

@@ -1,6 +1,7 @@
 defmodule Mix.Fermo.Compiler.Manifest do
   @manifest_vsn 1
 
+  @callback timestamp() :: term()
   def timestamp, do: Mix.Utils.last_modified(path())
 
   def path do
@@ -18,6 +19,7 @@ defmodule Mix.Fermo.Compiler.Manifest do
     end
   end
 
+  @callback write([Path.t()], term()) :: {:ok}
   def write(sources, timestamp) do
     manifest_data =
       [@manifest_vsn | sources]

@@ -3,13 +3,17 @@ defmodule Fermo.Sitemap do
   @open_tag ~S(<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @close_tag ~S(</urlset>)
 
-  def build(config, file_module \\ File)
-  def build(%{sitemap: sitemap} = config, file_module) do
+  @file_impl Application.get_env(:fermo, :file_impl, File)
+
+  @template Application.get_env(:fermo, :template, Fermo.Template)
+
+  def build(config)
+  def build(%{sitemap: sitemap} = config) do
     root = config.base_url
     build_path = config[:build_path] || "build"
     sitemap_pathname = build_path <> "/sitemap.xml"
-    datetime = FermoHelpers.DateTime.current_datetime()
-    lastmod = FermoHelpers.DateTime.strftime!(datetime, "%Y-%m-%dT%H:%M:%S%z")
+    datetime = DateTime.utc_now()
+    lastmod = DateTime.to_iso8601(datetime, :extended)
 
     config_defaults = %{
       lastmod: lastmod,
@@ -17,11 +21,11 @@ defmodule Fermo.Sitemap do
       priority: sitemap[:default_priority] || 0.5
     }
 
-    file_module.write!(sitemap_pathname, @xml_header)
-    file_module.write!(sitemap_pathname, @open_tag, [:append])
+    @file_impl.write!(sitemap_pathname, @xml_header)
+    @file_impl.write!(sitemap_pathname, @open_tag, [:append])
 
     Stream.map(config.pages, fn page ->
-      module = Fermo.Template.module_for_template(page.template)
+      module = @template.module_for_template(page.template)
       page_defaults = module.defaults()
       |> Enum.into(%{}, fn {k, v} -> {String.to_atom(k), v} end)
 
@@ -39,11 +43,11 @@ defmodule Fermo.Sitemap do
       end
     end)
     |> Stream.filter(&(&1))
-    |> Stream.into(file_module.stream!(sitemap_pathname, [:append, :utf8]))
+    |> Stream.into(@file_impl.stream!(sitemap_pathname, [:append, :utf8]))
     |> Stream.run()
 
-    file_module.write!(sitemap_pathname, @close_tag, [:append])
+    @file_impl.write!(sitemap_pathname, @close_tag, [:append])
     put_in(config, [:stats, :sitemap_built], Time.utc_now)
   end
-  def build(config, _file_module), do: config
+  def build(config), do: config
 end

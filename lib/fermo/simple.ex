@@ -9,6 +9,7 @@ defmodule Fermo.Simple do
 
   import Mix.Fermo.Paths, only: [source_path: 0]
 
+  @callback add(Map.t()) :: Map.t()
   def add(config) do
     exclude = Map.get(config, :exclude, []) ++ ["partials/*"]
     exclude_matchers = Enum.map(exclude, fn (glob) ->
@@ -28,8 +29,8 @@ defmodule Fermo.Simple do
       if skip do
         config
       else
-        target = Fermo.template_to_target(template, as_index_html: true)
-        Fermo.add_page(config, template, target, %{})
+        target = Fermo.Paths.template_to_target(template, as_index_html: true)
+        Fermo.Config.add_page(config, template, target, %{})
       end
     end)
   end

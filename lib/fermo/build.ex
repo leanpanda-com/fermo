@@ -1,7 +1,25 @@
 defmodule Fermo.Build do
+  @moduledoc false
+
+  import Mix.Fermo.Paths, only: [source_path: 0]
+
+  @callback run(Map.t()) :: {:ok, Map.t()}
   def run(config) do
     # TODO: check if Webpack assets are ready before building HTML
     # TODO: avoid passing config into tasks - decide the layout beforehand
+    config = put_in(config, [:stats, :build_started], Time.utc_now)
+
+    {:ok} = Fermo.Assets.build()
+    {:ok} = Fermo.I18n.load()
+
+    build_path = get_in(config, [:build_path])
+    File.mkdir(build_path)
+
+    config =
+      config
+      |> Fermo.Config.post_config()
+      |> copy_statics()
+      |> Fermo.Sitemap.build()
 
     Task.async_stream(
       config.pages,
@@ -9,7 +27,20 @@ defmodule Fermo.Build do
       [timeout: :infinity]
     ) |> Enum.to_list
 
-    put_in(config, [:stats, :build_pages_completed], Time.utc_now)
+    config = put_in(config, [:stats, :build_pages_completed], Time.utc_now)
+
+    {:ok, config}
+  end
+
+  defp copy_statics(config) do
+    statics = config[:statics]
+    build_path = get_in(config, [:build_path])
+    Enum.each(statics, fn (%{source: source, target: target}) ->
+      source_pathname = Path.join(source_path(), source)
+      target_pathname = Path.join(build_path, target)
+      Fermo.File.copy(source_pathname, target_pathname)
+    end)
+    put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end
 
   def render_page(page) do
