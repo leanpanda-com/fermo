@@ -107,7 +107,7 @@ module.exports = {
     }
   },
   plugins: [
-    new WebpackManifestPlugin({writeToFileEmit : true}),
+    new WebpackManifestPlugin({writeToFileEmit: true}),
     new MiniCssExtractPlugin({
       filename: cssFilenameTemplate
     })
