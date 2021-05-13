@@ -1,4 +1,6 @@
 defmodule Fermo.Config do
+  @moduledoc false
+
   @i18n Application.get_env(:fermo, :i18n, Fermo.I18n)
   @localizable Application.get_env(:fermo, :localizable, Fermo.Localizable)
   @simple Application.get_env(:fermo, :simple, Fermo.Simple)

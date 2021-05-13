@@ -1,4 +1,6 @@
 defmodule Mix.Tasks.Fermo.New do
+  @moduledoc false
+
   use Mix.Task
 
   @version Mix.Project.config()[:version]
