@@ -43,5 +43,5 @@ defmodule Fermo.Template do
   end
 
   @callback content_for(module(), [term()]) :: term()
-  def apply(module, args), do: apply(module, :content_for, args)
+  def content_for(module, args), do: apply(module, :content_for, args)
 end
