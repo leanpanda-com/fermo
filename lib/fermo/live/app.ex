@@ -16,13 +16,11 @@ defmodule Fermo.Live.App do
     Application.ensure_all_started(:telemetry)
     Application.ensure_all_started(:cowboy)
 
-    port = String.to_integer(System.get_env("PORT") || "4001")
-
     cowboy = {
       Plug.Cowboy,
       scheme: :http,
       plug: Server,
-      options: [dispatch: dispatch(), port: port]
+      options: [dispatch: dispatch(), port: port()]
     }
 
     children = app_live_mode_servers() ++ [
@@ -39,11 +37,14 @@ defmodule Fermo.Live.App do
     {:ok, pid}
   end
 
-  def stop(state) do
-    IO.puts "state: #{inspect(state, [pretty: true, width: 0])}"
+  def stop(_state) do
     Application.stop(:webpack_dev_server)
     Application.stop(:cowboy)
     Application.stop(:telemetry)
+  end
+
+  def port do
+    String.to_integer(System.get_env("PORT") || "4001")
   end
 
   defp dispatch() do

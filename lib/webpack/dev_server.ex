@@ -21,7 +21,7 @@ defmodule Webpack.DevServer do
       {:spawn, "yarn run webpack serve"},
       [{:env, [{'NODE_ENV', 'development'}]}]
     )
-    IO.puts "port: #{inspect(port, [pretty: true, width: 0])}"
+
     {:ok, port}
   end
 
