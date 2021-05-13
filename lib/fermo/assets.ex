@@ -71,7 +71,7 @@ defmodule Fermo.Assets do
     end
   end
 
-  defp image_tag_with_attributes(url, attributes) do
+  def image_tag_with_attributes(url, attributes) do
     attribs = Enum.map(attributes, fn ({k, v}) ->
       "#{k}=\"#{v}\""
     end)
