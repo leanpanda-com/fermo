@@ -51,19 +51,22 @@ when changes are detected.
 |   +-- my_project.ex - See [Configuration](#configuration)
 |   +-- helpers.ex
 +-- mix.exs           - See [Mix configuration](#mix-configuration)
++-- package.json
 +-- priv
-    +-- locales       - See [Localization](#localization)
-    |   +-- en.yml
-    |   +-- ...
-    +-- source
-        +-- javascripts
-        +-- layouts
-        +-- localizable
-        +-- templates
-        +-- partials
-        +-- static
-        +-- stylesheets
-        +-- templates
+|   +-- locales       - See [Localization](#localization)
+|   |   +-- en.yml
+|   |   +-- ...
+|   +-- source
+|       +-- javascripts
+|       +-- layouts
+|       +-- localizable
+|       +-- templates
+|       +-- partials
+|       +-- static
+|       +-- stylesheets
+|       +-- templates
++-- README.md
++-- webpack.config.js
 ```
 
 # Mix Configuration
@@ -94,7 +97,7 @@ end
 Create a module (under lib) with a name matching your MixProject module defined in
 `[mix.exs](#mix-configuration)`.
 
-This module must implement `build/0`, a function that returns an updated
+This module must implement `config/0`, a function that returns an updated
 `[config](#config-object)`.
 
 ```elixir
@@ -105,7 +108,7 @@ defmodule MyProject do
 
   use Fermo
 
-  def build do
+  def config do
     config = initial_config()
 
     {:ok, config}
