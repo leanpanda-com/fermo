@@ -6,4 +6,5 @@ config :fermo,
   localizable: Fermo.LocalizableMock,
   pagination: Fermo.PaginationMock,
   simple: Fermo.SimpleMock,
-  template: Fermo.TemplateMock
+  template: Fermo.TemplateMock,
+  file_impl: FileMock

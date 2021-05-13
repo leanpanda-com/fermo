@@ -17,26 +17,25 @@ defmodule FakeFile.Stream do
   end
 end
 
-defmodule FakeFile do
-  def write!(pathname, text, options \\ []) do
-    send self(), {:fake_file, :write!, pathname, text, options}
-  end
-
-  def stream!(path, _modes \\ [], _line_or_bytes \\ :line) do
-    %FakeFile.Stream{path: path}
-  end
-end
-
 defmodule Fermo.Template.FakeTemplate do
   def defaults, do: %{}
 end
 
 defmodule Fermo.SitemapTest do
   use ExUnit.Case, async: true
+  import Mox
 
   alias Fermo.Sitemap
 
+  setup :verify_on_exit!
+
   setup do
+    stub(FileMock, :stream!, fn path, _ -> %FakeFile.Stream{path: path} end)
+    stub(FileMock, :write!, fn _, _ -> :ok end)
+    stub(FileMock, :write!, fn _, _, _ -> :ok end)
+
+    stub(Fermo.TemplateMock, :module_for_template, fn _ -> Fermo.Template.FakeTemplate end)
+
     %{
       base_url: "https://example.com",
       sitemap: %{},
@@ -52,17 +51,28 @@ defmodule Fermo.SitemapTest do
   end
 
   test "it writes the xml declaration", config do
-    Sitemap.build(config, FakeFile)
+    stub(FileMock, :write!, fn _, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" -> :ok end)
 
-    assert_receive {:fake_file, :write!, _path, ~s(<?xml version="1.0" encoding="UTF-8"?>\n), []}
+    Sitemap.build(config)
   end
 
   test "it uses page paths as locations", config do
-    Sitemap.build(config, FakeFile)
+    Sitemap.build(config)
 
     receive do
       {:fake_file_stream, :into, _path, entry} ->
         assert entry =~ ~r(<loc>https://example.com/foo/bar/1</loc>)
+    after
+      1_000 -> flunk("Expected :fake_file_stream not received within 1s")
+    end
+  end
+
+  test "it produces correct ISO8601 timestamps", config do
+    Sitemap.build(config)
+
+    receive do
+      {:fake_file_stream, :into, _path, entry} ->
+        assert entry =~ ~r[<lastmod>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d+)?Z</lastmod>]
     after
       1_000 -> flunk("Expected :fake_file_stream not received within 1s")
     end
