@@ -12,8 +12,12 @@ defmodule Fermo.Paths do
   def path_to_target(path, as_index_html: false), do: path
   def path_to_target(path, _opts) do
     cond do
-      path == "index.html" -> path
-      String.ends_with?(path, "/index.html") -> path
+      path == "index.html" ->
+        path
+      String.ends_with?(path, "/index.html") ->
+        path
+      String.ends_with?(path, "/") ->
+        path <> "index.html"
       String.ends_with?(path, ".html") ->
         String.replace(path, ".html", "/index.html")
       true ->
