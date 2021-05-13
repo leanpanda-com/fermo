@@ -32,13 +32,8 @@ $ mix fermo.live
 
 The live site is available at http://localhost:4001/
 
-When pages are requested,
-the server injects a JS that starts a socket,
-on the Elixir side, the socket registers the path that
-the browser is visiting.
-
-When changes happen to pages that are being visited,
-the browser is told to reload the page via the websocket.
+Page dependencies are monitored and are reloaded in the browser
+when changes are detected.
 
 # Capabilities
 
