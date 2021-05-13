@@ -2,7 +2,7 @@ defmodule Fermo.MixProject do
   use Mix.Project
 
   # N.B.: Keep aligned with the versions in installer/mix.exs
-  @version "0.14.2"
+  @version "0.14.3"
   @elixir_version "~> 1.9"
   @git_origin "https://github.com/leanpanda-com/fermo"
 
@@ -20,7 +20,7 @@ defmodule Fermo.MixProject do
       consolidate_protocols: Mix.env() != :test,
       deps: deps(),
       docs: [
-        main: "README.md",
+        main: "readme",
         extras: [
           "README.md",
           "ARCHITECTURE.md",
