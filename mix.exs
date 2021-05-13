@@ -20,6 +20,7 @@ defmodule Fermo.MixProject do
       consolidate_protocols: Mix.env() != :test,
       deps: deps(),
       docs: [
+        main: "README.md",
         extras: [
           "README.md",
           "ARCHITECTURE.md",
@@ -27,7 +28,6 @@ defmodule Fermo.MixProject do
           "MiddlemanToFermo.md"
         ],
         homepage_url: @git_origin,
-        main: "Fermo",
         source_ref: "v#{@version}",
         source_url: @git_origin
       ],
