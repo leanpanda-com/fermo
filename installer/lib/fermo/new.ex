@@ -33,6 +33,7 @@ defmodule Fermo.New do
     "priv/source/layouts/layout.html.slim",
     "priv/source/stylesheets/application.sass",
     "priv/source/templates/home.html.slim",
+    "README.md",
     "webpack.config.js"
   ]
 
