@@ -57,9 +57,10 @@ defmodule Fermo.MixProject do
   defp deps do
     [
       {:deep_merge, ">= 1.0.0"},
-      {:ex_doc, "~> 0.19", only: :dev},
+      {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:excoveralls, ">= 0.0.0", only: :test},
       {:file_system, ">= 0.0.0"},
+      {:jason, ">= 1.0.0"},
       {:morphix, ">= 0.0.0"},
       {:mox, ">= 0.0.0", only: :test, runtime: false},
       {:plug_cowboy, "~> 2.0"},
