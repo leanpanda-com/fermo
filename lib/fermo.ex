@@ -1,5 +1,7 @@
 defmodule Fermo do
-  @moduledoc false
+  @moduledoc """
+  Fermo provides the main entry points for configuring a project
+  """
 
   @build Application.get_env(:fermo, :build, Fermo.Build)
   @pagination Application.get_env(:fermo, :pagination, Fermo.Pagination)

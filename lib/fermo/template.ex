@@ -1,4 +1,8 @@
 defmodule Fermo.Template do
+  @moduledoc """
+  Handle Fermo templates
+  """
+
   import Fermo.Naming, only: [source_path_to_module: 1]
   import Mix.Fermo.Paths, only: [absolute_to_source: 1]
 

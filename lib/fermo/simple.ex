@@ -9,6 +9,9 @@ defmodule Fermo.Simple do
 
   import Mix.Fermo.Paths, only: [source_path: 0]
 
+  @doc """
+  Add a SLIM HTML template to the build
+  """
   @callback add(map()) :: map()
   def add(config) do
     exclude = Map.get(config, :exclude, []) ++ ["partials/*"]

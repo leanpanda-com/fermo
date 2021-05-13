@@ -9,6 +9,29 @@ defmodule Fermo.I18n do
     {:ok} = I18n.put(translations)
   end
 
+  @doc """
+  Cross references all config pages, finding those with the same `:id`
+  but with different locales.
+
+  Each page with an `:id` and `:locale` in its parameters has
+  a `:localized_paths` Map added indicating which locale has
+  which path.
+
+  E.g.
+
+     %{
+       path: "/",
+       template: "home.html.slim",
+       params: %{
+         id: "home_page",
+         locale: :en,
+         localized_paths: %{
+           en: "/",
+           it: "/it/"
+         }
+       }
+     }
+  """
   @callback optionally_build_path_map(map()) :: map()
   def optionally_build_path_map(%{i18n: nil} = config), do: config
   def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
