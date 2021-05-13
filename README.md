@@ -173,7 +173,7 @@ Currently, Fermo only supports SLIM templates for HTML.
 
 There are various types of templates:
 * simple templates - any templates found under `priv/source` will be built. The `partials`
-  directory is exluded by default - see [excludes](#excludes).
+  directory is excluded by default - see [excludes](#excludes).
 * page templates - used with [config-defined pages](#config-defined-pages),
 * partials - used from other templates,
 * localized - build for each configured locale. See [localization](#localization)
