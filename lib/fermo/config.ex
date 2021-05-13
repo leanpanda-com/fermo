@@ -37,9 +37,9 @@ defmodule Fermo.Config do
     |> put_in([:stats, :post_config_completed], Time.utc_now)
   end
 
-  def add_page(config, template, target, params \\ %{}, options \\ %{}) do
+  def add_page(config, template, target, params \\ %{}) do
     pages = Map.get(config, :pages, [])
-    page = page_from(template, target, params, options)
+    page = page_from(template, target, params)
     put_in(config, [:pages], pages ++ [page])
   end
 
@@ -48,12 +48,11 @@ defmodule Fermo.Config do
     put_in(config, [:statics], statics ++ [%{source: source, target: target}])
   end
 
-  def page_from(template, target, params, options) do
+  def page_from(template, target, params) do
     %{
       template: template,
       target: target,
-      params: params,
-      options: options
+      params: params
     }
   end
 

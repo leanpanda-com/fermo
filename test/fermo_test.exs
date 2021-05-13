@@ -4,12 +4,12 @@ defmodule FermoTest do
 
   setup :verify_on_exit!
 
-  describe "page/5" do
+  describe "page/4" do
     test "it adds the page" do
-      config = Fermo.page(%{pages: []}, "template", "target", "params", "options")
+      config = Fermo.page(%{pages: []}, "template", "target", "params")
 
       page = hd(config.pages)
-      assert page == %{options: "options", params: "params", target: "target", template: "template"}
+      assert page == %{params: "params", target: "target", template: "template"}
     end
   end
 

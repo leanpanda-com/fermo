@@ -6,7 +6,7 @@ defmodule Fermo.ConfigTest do
 
   setup :verify_on_exit!
 
-  describe "add_page/5" do
+  describe "add_page/4" do
     setup do
       config = %{pages: []}
 
@@ -14,10 +14,10 @@ defmodule Fermo.ConfigTest do
     end
 
     test "it adds a page", context do
-      config = Config.add_page(context.config, "template", "target", "params", "options")
+      config = Config.add_page(context.config, "template", "target", "params")
 
       page = hd(config.pages)
-      assert page == %{template: "template", target: "target", params: "params", options: "options"}
+      assert page == %{template: "template", target: "target", params: "params"}
     end
   end
 
@@ -29,9 +29,9 @@ defmodule Fermo.ConfigTest do
     end
   end
 
-  describe "page_from/4" do
+  describe "page_from/3" do
     test "it returns the page" do
-      assert Config.page_from("a", "b", "c", "d") == %{template: "a", target: "b", params: "c", options: "d"}
+      assert Config.page_from("a", "b", "c") == %{template: "a", target: "b", params: "c"}
     end
   end
 

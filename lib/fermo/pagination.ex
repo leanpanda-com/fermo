@@ -42,18 +42,13 @@ defmodule Fermo.Pagination do
         first: first
       }
 
-      {prms, ctx} = if fun do
-        fun.({%{pagination: pagination}, context}, index)
+      prms = if fun do
+        fun.(%{context | pagination: pagination}, index)
       else
-        {%{pagination: pagination}, context}
+        %{context | pagination: pagination}
       end
 
-      Fermo.Config.page_from(
-        template,
-        page_path(pagination),
-        prms,
-        ctx
-      )
+      Fermo.Config.page_from(template, page_path(pagination), prms)
     end)
 
     pages = Map.get(config, :pages, [])

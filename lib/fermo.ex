@@ -34,8 +34,8 @@ defmodule Fermo do
     end
   end
 
-  def page(config, template, target, params \\ nil, options \\ nil) do
-    Fermo.Config.add_page(config, template, target, params, options)
+  def page(config, template, target, params \\ nil) do
+    Fermo.Config.add_page(config, template, target, params)
   end
 
   def paginate(config, template, options \\ %{}, context \\ %{}, fun \\ nil) do

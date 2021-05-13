@@ -88,7 +88,7 @@ defmodule MyProject.MixProject do
 
   defp deps do
     [
-      {:fermo, "~> 0.5.1"}
+      {:fermo, "~> 0.14.0"}
     ]
   end
 end
@@ -150,7 +150,7 @@ So, if you have a local JSON of YAML file, or even better an online
 CMS, as a source, you can build a page for each of your items
 without having to commit the to your Git repo.
 
-In Fermo, dynamic, data-based pages are created with the `page` method in
+In Fermo, dynamic, data-based pages are created with the `Fermo.page/4` method in
 your project configuration's `build/0` method.
 
 ```elixir
@@ -160,9 +160,8 @@ your project configuration's `build/0` method.
     page(
       config,
       "templates/foo.html.slim",
-      "/foos/#{foo.slug}/index.html",
-      %{foo: foo},
-      %{locale: :en}
+      "/foos/#{foo.slug}/",
+      %{foo: foo, locale: :en}
     )
     ...
   end
@@ -201,8 +200,7 @@ Information about the top-level page.
 * `:template` - the template path and name relative to the source root,
 * `:target` - the path of the generated file,
 * `:path` - the online path of the page,
-* `:params` - the parameters passed to the template,
-* `:options` - other options, e.g. the locale.
+* `:params` - the parameters passed to the template.
 
 ## Partials
 
@@ -263,15 +261,14 @@ end
 ```
 
 Then ensure you pass an `:id` and `:locale` in the options parameter
-of your Fermo.page/5 calls:
+of your Fermo.page/4 calls:
 
 ```elixir
 Fermo.page(
   config,
   "templates/my_template.html.slim",
   "/posts/#{post.slug}/index.html",
-  %{post: post},
-  %{locale: :fr, id: "post-#{post.id}"}
+  %{post: post, locale: :fr, id: "post-#{post.id}"}
 )
 ```
 
