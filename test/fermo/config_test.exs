@@ -138,8 +138,8 @@ defmodule Fermo.ConfigTest do
         statics: []
       }
 
-      config = if Map.has_key?(context, :layout) do
-        Map.put(config, :layout, context.layout)
+      config = if Map.has_key?(context, :config_layout) do
+        Map.put(config, :layout, context.config_layout)
       else
         config
       end
@@ -182,7 +182,7 @@ defmodule Fermo.ConfigTest do
     end
 
     @tag defaults: %{baz: :qux}
-    test "it merges page params with defaults", context do
+    test "it merges page params with frontmatter defaults", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
@@ -190,7 +190,7 @@ defmodule Fermo.ConfigTest do
       assert page.params.baz == :qux
     end
 
-    test "it sets page layouts from the global config", context do
+    test "it sets a default layout", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
@@ -199,7 +199,7 @@ defmodule Fermo.ConfigTest do
     end
 
     @tag defaults: %{layout: "layouts/from_frontmatter"}
-    test "page defaults override the global layout config", context do
+    test "frontmatter layouts override the default layout", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
@@ -208,7 +208,7 @@ defmodule Fermo.ConfigTest do
     end
 
     @tag defaults: %{layout: "custom"}
-    test "it uses any layout set in defaults", context do
+    test "it uses any layout set in frontmatter", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
@@ -216,22 +216,34 @@ defmodule Fermo.ConfigTest do
       assert page.params.layout == "custom.html.slim"
     end
 
-    @tag defaults: %{layout: nil}
-    test "it accepts a nil layout set in defaults", context do
-      config = Config.post_config(context.config)
-
-      page = hd(config.pages)
-
-      assert page.params.layout == nil
-    end
-
-    @tag layout: "foo"
+    @tag config_layout: "foo"
     test "it uses any layout set in config", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
       assert page.params.layout == "foo.html.slim"
+    end
+
+    @tag config_layout: "from_config"
+    @tag defaults: %{layout: "from_frontmatter"}
+    test "the frontmatter layout takes precedence over the config layout", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.params.layout == "from_frontmatter.html.slim"
+    end
+
+    @tag config_layout: "from_config"
+    @tag defaults: %{layout: "from_frontmatter"}
+    @tag pages: [%{template: "mock_template", target: "target", params: %{layout: "from_page"}}]
+    test "the page layout takes precedence over the frontmatter and config layouts", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.params.layout == "from_page.html.slim"
     end
 
     test "it sets the module", context do

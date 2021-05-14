@@ -6,7 +6,6 @@ defmodule Fermo.Build do
   @callback run(map()) :: {:ok, map()}
   def run(config) do
     # TODO: check if Webpack assets are ready before building HTML
-    # TODO: avoid passing config into tasks - decide the layout beforehand
     config = put_in(config, [:stats, :build_started], Time.utc_now)
 
     {:ok} = Fermo.Assets.build()
