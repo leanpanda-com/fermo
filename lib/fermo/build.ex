@@ -43,10 +43,10 @@ defmodule Fermo.Build do
   end
 
   def render_page(page) do
-    content = render_body(page.options.module, page)
+    content = render_body(page.params.module, page)
 
-    if page.options.layout do
-      build_layout_with_content(page.options.layout, content, page)
+    if page.params.layout do
+      build_layout_with_content(page.params.layout, content, page)
     else
       content
     end
@@ -68,7 +68,7 @@ defmodule Fermo.Build do
     end
   end
 
-  defp cache_key(%{options: %{surrogate_key: surrogate_key}}) do
+  defp cache_key(%{params: %{surrogate_key: surrogate_key}}) do
     hash = :crypto.hash(:sha256, surrogate_key) |> Base.encode16
     {:ok, hash}
   end

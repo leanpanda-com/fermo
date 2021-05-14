@@ -27,7 +27,7 @@ defmodule Fermo.Config do
       fn page ->
         page
         |> set_path(config)
-        |> merge_default_options(config)
+        |> merge_defaults(config)
       end
     )
 
@@ -82,7 +82,7 @@ defmodule Fermo.Config do
   defp optionally_add_extensions(nil), do: nil
   defp optionally_add_extensions(layout), do: "#{layout}.html.slim"
 
-  defp merge_default_options(page, config) do
+  defp merge_defaults(page, config) do
     template = page.template
     module = @template.module_for_template(template)
     defaults = @template.defaults_for(module)

@@ -48,7 +48,7 @@ Compared to the Ruby implementation:
 * Fermo passes two variables to SLIM templates: `params` and `context`,
   see [the main README](README.md) for info on these variables,
 * In partials, `locals:` is not available, get values from `params`,
-* The `locale` is included in the `context` as `context.page.options.locale`
+* The `locale` is included in the `context` as `context.page.params.locale`
   and cannot be obtained from `I18n.locale`,
 * Use `params.content` in layouts instead of `yield`.
 

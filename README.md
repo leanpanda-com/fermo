@@ -258,7 +258,7 @@ defmodule MyProject do
 end
 ```
 
-Then ensure you pass an `:id` and `:locale` in the options parameter
+Then ensure you pass an `:id` and `:locale` in the params
 of your Fermo.page/4 calls:
 
 ```elixir

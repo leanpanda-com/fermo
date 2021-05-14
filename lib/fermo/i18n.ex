@@ -37,15 +37,15 @@ defmodule Fermo.I18n do
   def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
     pages_with_locale_and_id = Enum.filter(
       config.pages,
-      fn %{options: options} ->
-        Map.has_key?(options, :locale) && Map.has_key?(options, :id)
+      fn %{params: params} ->
+        Map.has_key?(params, :locale) && Map.has_key?(params, :id)
       end
     )
 
     path_locale_id = Enum.map(
       pages_with_locale_and_id,
       fn page ->
-        %{path: page.path, id: page.options.id, locale: atom(page.options.locale)}
+        %{path: page.path, id: page.params.id, locale: atom(page.params.locale)}
       end
     )
 
@@ -64,9 +64,9 @@ defmodule Fermo.I18n do
 
     pages = Enum.map(
       config.pages,
-      fn %{options: options} = page ->
-        if Map.has_key?(options, :locale) && Map.has_key?(options, :id) do
-          map = path_map[options.id]
+      fn %{params: params} = page ->
+        if Map.has_key?(params, :locale) && Map.has_key?(params, :id) do
+          map = path_map[params.id]
           put_in(page, [:localized_paths], map)
         else
           page
