@@ -78,7 +78,7 @@ defmodule Fermo.Build do
   end
 
   defp is_cached?(cached_pathname) do
-    if File.exists?(cached_pathname) do
+    if File.regular?(cached_pathname) do
       {:ok}
     else
       {:build_and_cache, cached_pathname}
