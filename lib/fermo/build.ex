@@ -25,7 +25,7 @@ defmodule Fermo.Build do
       [timeout: :infinity]
     ) |> Enum.to_list
 
-    config = put_in(config, [:stats, :build_pages_completed], Time.utc_now)
+    config = put_in(config, [:stats, :build_completed], Time.utc_now)
 
     {:ok, config}
   end
