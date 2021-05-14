@@ -31,8 +31,8 @@ defmodule Fermo.Build do
   end
 
   defp copy_statics(config) do
-    statics = config[:statics]
-    build_path = get_in(config, [:build_path])
+    statics = Map.get(config, :statics, [])
+    build_path = config.build_path
     Enum.each(statics, fn (%{source: source, target: target}) ->
       source_pathname = Path.join(source_path(), source)
       target_pathname = Path.join(build_path, target)
