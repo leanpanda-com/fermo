@@ -11,8 +11,7 @@ defmodule Fermo.Build do
     {:ok} = Fermo.Assets.build()
     {:ok} = Fermo.I18n.load()
 
-    build_path = get_in(config, [:build_path])
-    File.mkdir(build_path)
+    File.mkdir_p!(config.build_path)
 
     config =
       config
