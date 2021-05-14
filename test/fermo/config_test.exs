@@ -121,7 +121,7 @@ defmodule Fermo.ConfigTest do
     setup context do
       defaults = Map.get(context, :defaults, %{})
       # This depends on the default content_for returning "" and not nil
-      pages = Map.get(context, :pages, [%{template: "mock_template", target: "target", options: %{foo: :bar}}])
+      pages = Map.get(context, :pages, [%{template: "mock_template", target: "target", params: %{foo: :bar}}])
       content_for_path = Map.get(context, :content_for_path, "")
 
       stub(Fermo.TemplateMock, :module_for_template, fn _ -> "module" end)
@@ -182,38 +182,47 @@ defmodule Fermo.ConfigTest do
     end
 
     @tag defaults: %{baz: :qux}
-    test "it merges page options with defaults", context do
+    test "it merges page params with defaults", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.options.baz == :qux
+      assert page.params.baz == :qux
     end
 
-    test "it sets page layouts", context do
+    test "it sets page layouts from the global config", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.options.layout == "layouts/layout.html.slim"
+      assert page.params.layout == "layouts/layout.html.slim"
     end
 
-    @tag defaults: %{"layout" => "custom"}
+    @tag defaults: %{layout: "layouts/from_frontmatter"}
+    test "page defaults override the global layout config", context do
+      config = Config.post_config(context.config)
+
+      page = hd(config.pages)
+
+      assert page.params.layout == "layouts/from_frontmatter.html.slim"
+    end
+
+    @tag defaults: %{layout: "custom"}
     test "it uses any layout set in defaults", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.options.layout == "custom.html.slim"
+      assert page.params.layout == "custom.html.slim"
     end
 
-    @tag defaults: %{"layout" => nil}
+    @tag defaults: %{layout: nil}
     test "it accepts a nil layout set in defaults", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.options.layout == nil
+      assert page.params.layout == nil
     end
 
     @tag layout: "foo"
@@ -222,7 +231,7 @@ defmodule Fermo.ConfigTest do
 
       page = hd(config.pages)
 
-      assert page.options.layout == "foo"
+      assert page.params.layout == "foo.html.slim"
     end
 
     test "it sets the module", context do
@@ -230,7 +239,7 @@ defmodule Fermo.ConfigTest do
 
       page = hd(config.pages)
 
-      assert page.options.module == "module"
+      assert page.params.module == "module"
     end
 
     test "it builds localized paths", context do

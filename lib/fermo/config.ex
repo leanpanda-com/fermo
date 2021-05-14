@@ -79,31 +79,31 @@ defmodule Fermo.Config do
     |> put_in([:pathname], pathname)
   end
 
+  defp optionally_add_extensions(nil), do: nil
+  defp optionally_add_extensions(layout), do: "#{layout}.html.slim"
+
   defp merge_default_options(page, config) do
     template = page.template
     module = @template.module_for_template(template)
     defaults = @template.defaults_for(module)
 
-    layout = if Map.has_key?(defaults, "layout") do
-      if defaults["layout"] do
-        defaults["layout"] <> ".html.slim"
-      else
-        defaults["layout"]
-      end
-    else
-      if Map.has_key?(config, :layout) do
-        config.layout
-      else
+    layout = cond do
+      Map.has_key?(page.params, :layout) ->
+        optionally_add_extensions(page.params.layout)
+      Map.has_key?(defaults, :layout) ->
+        optionally_add_extensions(defaults.layout)
+      Map.has_key?(config, :layout) ->
+        optionally_add_extensions(config.layout)
+      true ->
         "layouts/layout.html.slim"
-      end
     end
 
-    options =
+    params =
       defaults
-      |> Map.merge(page[:options] || %{})
+      |> Map.merge(page[:params] || %{})
       |> put_in([:module], module)
       |> put_in([:layout], layout)
 
-    put_in(page, [:options], options)
+    put_in(page, [:params], params)
   end
 end
