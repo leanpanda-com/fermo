@@ -30,6 +30,16 @@ defmodule Fermo.Build do
     {:ok, config}
   end
 
+  def render_page(page) do
+    content = render_body(page.params.module, page)
+
+    if page.params.layout do
+      build_layout_with_content(page.params.layout, content, page)
+    else
+      content
+    end
+  end
+
   defp copy_statics(config) do
     statics = Map.get(config, :statics, [])
     build_path = config.build_path
@@ -39,16 +49,6 @@ defmodule Fermo.Build do
       Fermo.File.copy(source_pathname, target_pathname)
     end)
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
-  end
-
-  def render_page(page) do
-    content = render_body(page.params.module, page)
-
-    if page.params.layout do
-      build_layout_with_content(page.params.layout, content, page)
-    else
-      content
-    end
   end
 
   defp render_cache_and_save(page) do
