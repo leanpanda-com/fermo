@@ -42,10 +42,11 @@ defmodule Fermo.Pagination do
         first: first
       }
 
+      with_pagination = Map.put(context, :pagination, pagination)
       prms = if fun do
-        fun.(%{context | pagination: pagination}, index)
+        fun.(with_pagination, index)
       else
-        %{context | pagination: pagination}
+        with_pagination
       end
 
       Fermo.Config.page_from(template, page_path(pagination), prms)
