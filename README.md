@@ -295,6 +295,23 @@ id: my-localized-page
 ---
 ```
 
+# Testing
+
+There is a very slow (40s) integration test that builds a project -
+the time is mostly taken up compiling dependencies.
+
+By default integration tests are skipped when you run
+
+```sh
+$ mix test
+```
+
+To run all tests, add the FERMO_RUN_INTEGRATION environment variable:
+
+```sh
+$ FERMO_RUN_INTEGRATION=1 mix test
+```
+
 # Middleman to Fermo
 
 Fermo was created as an improvement on Middleman, so its defaults
