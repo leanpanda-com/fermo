@@ -1,0 +1,7 @@
+- content = params.content
+- locale = params[:locale] || :en
+
+doctype 5
+html lang=locale
+  body
+    main= content
