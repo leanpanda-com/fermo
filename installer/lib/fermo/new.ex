@@ -40,7 +40,8 @@ defmodule Fermo.New do
   @other_deps """
     ,
     {:datocms_graphql_client, "~> 0.14.3"},
-    {:fermo_datocms_graphql_client, "~> 0.14.3"}
+    {:fermo_datocms_graphql_client, "~> 0.14.3"},
+    {:fermo_helpers, "~> 0.12.0"}
   """
 
   @file_module Application.get_env(:fermo_new, :file_module, File)
