@@ -3,9 +3,9 @@ defmodule Fermo.Localizable do
   import Mix.Fermo.Paths, only: [source_path: 0]
 
   @callback add(map()) :: map()
-  def add(%{i18n: _i18n} = config) do
+  def add(%{i18n: i18n} = config) do
     root_locale = root_locale(config)
-    locales = config.i18n
+    locales = i18n
 
     exclude = Map.get(config, :exclude, []) ++ ["localizable/*"]
     config = put_in(config, [:exclude], exclude)
