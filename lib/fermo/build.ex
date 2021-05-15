@@ -61,12 +61,13 @@ defmodule Fermo.Build do
         body = render_page(page)
         Fermo.File.save(cache_pathname, body)
         Fermo.File.save(page.pathname, body)
-      _ ->
+      {:no_key} ->
         body = render_page(page)
         Fermo.File.save(page.pathname, body)
     end
   end
 
+  defp cache_key(%{params: %{surrogate_key: nil}}), do: {:no_key}
   defp cache_key(%{params: %{surrogate_key: surrogate_key}}) do
     hash = :crypto.hash(:sha256, surrogate_key) |> Base.encode16
     {:ok, hash}
