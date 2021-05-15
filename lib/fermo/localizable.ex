@@ -11,24 +11,20 @@ defmodule Fermo.Localizable do
     config = put_in(config, [:exclude], exclude)
 
     templates = File.cd!(source_path(), fn ->
-      Path.wildcard("**/*.slim")
+      Path.wildcard("localizable/**/*.slim")
     end)
 
     Enum.reduce(templates, config, fn (template, config) ->
-      if String.starts_with?(template, "localizable/") do
-        target = String.replace_prefix(template, "localizable/", "")
-        target = Fermo.Paths.template_to_target(target, as_index_html: true)
-        Enum.reduce(locales, config, fn (locale, config) ->
-          localized_target = if locale == root_locale do
-              "/#{target}"
-            else
-              "/#{locale}/#{target}"
-            end
-          Fermo.Config.add_page(config, template, localized_target, %{locale: locale})
-        end)
-      else
-        config
-      end
+      target = String.replace_prefix(template, "localizable/", "")
+      target = Fermo.Paths.template_to_target(target, as_index_html: true)
+      Enum.reduce(locales, config, fn (locale, config) ->
+        localized_target = if locale == root_locale do
+            "/#{target}"
+          else
+            "/#{locale}/#{target}"
+          end
+        Fermo.Config.add_page(config, template, localized_target, %{locale: locale})
+      end)
     end)
   end
   def add(config), do: config
