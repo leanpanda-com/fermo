@@ -11,6 +11,8 @@ jobs:
 
     name: Build and test
     runs-on: ubuntu-latest
+    env:
+      FERMO_RUN_INTEGRATION: 1
 
     steps:
     - uses: actions/checkout@v2
