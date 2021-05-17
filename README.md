@@ -1,3 +1,5 @@
+![Build Status](https://github.com/leanpanda-com/fermo/actions/workflows/elixir.yml/badge.svg?branch=main)
+
 # Fermo
 
 A static site generator, build for speed and flexibility.
