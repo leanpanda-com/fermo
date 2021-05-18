@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Fermo.New do
-  @moduledoc false
+  @moduledoc "Generate a Fermo project"
 
   use Mix.Task
 
