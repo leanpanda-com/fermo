@@ -12,8 +12,6 @@ defmodule Mix.Tasks.Fermo.Live do
     {:ok, _pid} = Fermo.Live.App.start(:normal, [])
     port = Fermo.Live.App.port()
     IO.puts "Fermo Live is running on port #{port}"
-    t = Task.async(fn -> IO.gets("") end)
-    Task.await(t, :infinity)
-    Fermo.Live.App.stop(:normal)
+    Process.sleep(:infinity)
   end
 end
