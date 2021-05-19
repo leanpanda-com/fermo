@@ -141,6 +141,7 @@ defmodule Fermo.Live.Server do
       "js" -> "application/javascript"
       "css" -> "text/css"
       "html" -> "text/html"
+      "ico" -> "image/vnd.microsoft.icon"
       "jpg" -> "image/jpeg"
       "jpeg" -> "image/jpeg"
       "pdf" -> "application/pdf"

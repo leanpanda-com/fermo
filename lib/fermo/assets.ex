@@ -36,7 +36,7 @@ defmodule Fermo.Assets do
     url
   end
   def font_path(filename) do
-    Webpack.Assets.path!("fonts/#{filename}")
+    Webpack.Assets.path!("/fonts/#{filename}")
   end
 
   defmacro image_path("https://" <> _path = url) do
