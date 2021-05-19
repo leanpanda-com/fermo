@@ -42,7 +42,7 @@ defmodule Fermo.Live.Server do
 
   defp serve_static(path, conn) do
     build_path = build_path(path)
-    {:ok, extension} = extension(path)
+    {:ok, extension} = extension(build_path)
     mime_type = mime_type(extension)
     respond_with_file(conn, build_path, mime_type)
   end
