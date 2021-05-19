@@ -31,6 +31,7 @@ defmodule Webpack.Assets do
     |> File.read!
     |> Jason.decode!
     |> Enum.into(
+      # Ensure initial '/' on all assets in the manifest
       %{},
       fn
         {"/" <> k, "/" <> v} -> {"/" <> k, "/" <> v}

@@ -120,7 +120,7 @@ defmodule Fermo.Assets do
     url
   end
   def static_javascript_path(name) do
-    Webpack.Assets.path!("#{name}.js")
+    Webpack.Assets.path!("/#{name}.js")
   end
 
   def live_javascript_path(name) do
@@ -143,7 +143,7 @@ defmodule Fermo.Assets do
     url
   end
   def static_stylesheet_path(name) do
-    Webpack.Assets.path!("#{name}.css")
+    Webpack.Assets.path!("/#{name}.css")
   end
 
   def live_stylesheet_path(name) do
