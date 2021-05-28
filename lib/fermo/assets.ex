@@ -55,19 +55,19 @@ defmodule Fermo.Assets do
     end
   end
 
-  defmacro image_tag(name, attributes \\ [])
-  defmacro image_tag("https://" <> _path = url, attributes) do
-    image_tag_with_attributes(url, attributes)
-  end
   defmacro image_tag(filename, attributes) do
     quote do
-      context = var!(context)
-      url = if context[:page][:live] do
-        live_image_path(unquote(filename))
+      if String.starts_with?(unquote(filename), "https://") do
+        image_tag_with_attributes(unquote(filename), unquote(attributes))
       else
-        static_image_path(unquote(filename))
+        context = var!(context)
+        url = if context[:page][:live] do
+          live_image_path(unquote(filename))
+        else
+          static_image_path(unquote(filename))
+        end
+        image_tag_with_attributes(url, unquote(attributes))
       end
-      image_tag_with_attributes(url, unquote(attributes))
     end
   end
 
