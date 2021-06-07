@@ -9,7 +9,7 @@ defmodule Mix.FermoRunTest do
 
     File.cd!(test_path, fn ->
       env = [
-        {"BASE_URL", "http://localhost:8080"},
+        {"BASE_URL", "http://localhost:4001"},
         {"BUILD_ENV", "development"},
         {"MIX_ENV", "dev"}
       ]
