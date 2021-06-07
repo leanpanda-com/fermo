@@ -297,6 +297,21 @@ id: my-localized-page
 ---
 ```
 
+## <a name="webpack-asset-pipeline"></a>Webpack asset pipeline
+
+`mix fermo.build` runs Webpack to produce static assets.
+
+`mix fermo.live` runs Webpack dev server.
+
+It is assumed that you are using Webpack >= 5.
+
+If you are using Webpack <= 4.x, you'll need to add the following to your
+`config/config.exs`:
+
+```elixir
+config :fermo, webpack_dev_server_command: "yarn run webpack serve --watch-stdin"
+```
+
 # Testing
 
 There is a very slow (40s) integration test that builds a project -
