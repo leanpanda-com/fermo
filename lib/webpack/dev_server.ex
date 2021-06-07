@@ -31,8 +31,7 @@ defmodule Webpack.DevServer do
     {:ok, port}
   end
 
-  def handle_info({_port, {:data, charlist}}, state) do
-    message = List.to_string(charlist)
+  def handle_info({_port, {:data, message}}, state) do
     if String.match?(message, ~r/manifest.json\s.*?\[emitted\]/) do
       IO.puts "manifest emitted!"
       {:ok} = Webpack.Assets.load_manifest()
