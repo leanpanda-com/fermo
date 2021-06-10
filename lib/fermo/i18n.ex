@@ -22,15 +22,17 @@ defmodule Fermo.I18n do
      %{
        path: "/",
        template: "home.html.slim",
+       localized_paths: %{
+         en: "/",
+         it: "/it/"
+       },
        params: %{
          id: "home_page",
-         locale: :en,
-         localized_paths: %{
-           en: "/",
-           it: "/it/"
-         }
+         locale: :en
        }
      }
+
+  In templates, this data is available via `context.page.localized_paths`.
   """
   @callback optionally_build_path_map(map()) :: map()
   def optionally_build_path_map(%{i18n: nil} = config), do: config
