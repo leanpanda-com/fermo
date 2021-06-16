@@ -60,5 +60,8 @@ defmodule Fermo.Sitemap do
     @file_impl.write!(sitemap_pathname, @close_tag, [:append])
     put_in(config, [:stats, :sitemap_built], Time.utc_now)
   end
-  def build(config), do: config
+  def build(config) do
+    Logger.debug "[Sitemap] Skipping sitemap generation as config[:sitemap] is missing"
+    config
+  end
 end
