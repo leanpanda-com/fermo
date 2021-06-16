@@ -12,6 +12,7 @@ defmodule Fermo.Live.SocketRegistry do
   end
 
   def subscribe(path, pid) when is_pid(pid) do
+    path = if String.ends_with?(path, "/"), do: path, else: path <> "/"
     GenServer.call(@name, {:subscribe, path, pid})
   end
 
