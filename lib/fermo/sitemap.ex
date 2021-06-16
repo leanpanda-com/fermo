@@ -1,4 +1,6 @@
 defmodule Fermo.Sitemap do
+  require Logger
+
   @xml_header ~s(<?xml version="1.0" encoding="UTF-8"?>\n)
   @open_tag ~S(<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">)
   @close_tag ~S(</urlset>)
@@ -7,6 +9,13 @@ defmodule Fermo.Sitemap do
 
   @template Application.get_env(:fermo, :template, Fermo.Template)
 
+  @doc """
+  Use a template's frontmatter to exclude it from the sitemap:
+
+      ---
+      hide_from_sitemap: true
+      ---
+  """
   def build(config)
   def build(%{sitemap: sitemap} = config) do
     root = config.base_url
@@ -40,6 +49,8 @@ defmodule Fermo.Sitemap do
             <priority>#{values.priority}</priority>
           </url>
         )
+      else
+        Logger.debug "[Sitemap] Excluding path '#{page.path}', as defaults include `:hide_from_sitemap`"
       end
     end)
     |> Stream.filter(&(&1))
