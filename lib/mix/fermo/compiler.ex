@@ -13,8 +13,16 @@ defmodule Mix.Fermo.Compiler do
     :yamerl_app.set_param(:node_mods, [])
     compilation_timestamp = compilation_timestamp()
     ensure_helpers_module()
+
     all_sources = all_sources()
-    changed = changed_since(all_sources, @mix_compiler_manifest.timestamp())
+    timestamp = @mix_compiler_manifest.timestamp()
+    helpers_changed = helpers_changed?(timestamp)
+    changed = if helpers_changed do
+      MapSet.to_list(all_sources)
+    else
+      changed_since(all_sources, timestamp)
+    end
+
     count = length(changed)
     if count > 0 do
       Logger.info "Fermo.Compiler compiling #{count} file(s)... "
@@ -43,6 +51,8 @@ defmodule Mix.Fermo.Compiler do
 
   def helpers_module, do: :"Elixir.Helpers"
 
+  def helpers_path, do: "lib/helpers.ex"
+
   def ensure_helpers_module do
     Code.ensure_loaded(helpers_module())
     has_helpers = has_helpers?()
@@ -57,5 +67,9 @@ defmodule Mix.Fermo.Compiler do
 
   def has_helpers? do
     function_exported?(helpers_module(), :__info__, 1)
+  end
+
+  def helpers_changed?(timestamp) do
+    @mix_utils.last_modified(helpers_path()) > timestamp
   end
 end

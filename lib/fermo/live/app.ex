@@ -25,7 +25,7 @@ defmodule Fermo.Live.App do
 
     children = app_live_mode_servers() ++ [
       cowboy,
-      {Watcher, dirs: ["priv/source"]},
+      {Watcher, dirs: ["lib", "priv/source"]},
       {ChangeHandler, []},
       {Dependencies, []},
       {SocketRegistry, []},
