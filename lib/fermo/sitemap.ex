@@ -10,6 +10,15 @@ defmodule Fermo.Sitemap do
   @template Application.get_env(:fermo, :template, Fermo.Template)
 
   @doc """
+  The sitemap is built if config[:sitemap] is set.
+
+  It should be a Map.
+
+  Available options:
+
+  * `:default_change_frequency` - see https://www.sitemaps.org/protocol.html#changefreqdef
+  * `:default_priority` - a value between 0 and 1
+
   Use a template's frontmatter to exclude it from the sitemap:
 
       ---
