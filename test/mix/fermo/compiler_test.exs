@@ -11,6 +11,7 @@ defmodule Mix.Fermo.CompilerTest do
       helpers_timestamp = context[:helpers_timestamp] || :calendar.universal_time
       template_timestamp = context[:template_timestamp] || :calendar.universal_time
 
+      stub(FileMock, :write!, fn _, _, _ -> :ok end)
       stub(Fermo.CompilerMock, :compile, fn _ -> {:ok} end)
       stub(Mix.Fermo.Compiler.ManifestMock, :timestamp, fn -> manifest_timestamp end)
       stub(Mix.Fermo.Compiler.ManifestMock, :write, fn _, _ -> {:ok} end)

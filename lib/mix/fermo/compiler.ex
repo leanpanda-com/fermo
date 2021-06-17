@@ -5,6 +5,7 @@ defmodule Mix.Fermo.Compiler do
 
   import Mix.Fermo.Paths
 
+  @file_impl Application.get_env(:fermo, :file_impl, File)
   @compiler Application.get_env(:fermo, :compiler, Fermo.Compiler)
   @mix_compiler_manifest Application.get_env(:fermo, :mix_compiler_manifest, Mix.Fermo.Compiler.Manifest)
   @mix_utils Application.get_env(:fermo, :mix_utils, Mix.Utils)
@@ -60,7 +61,7 @@ defmodule Mix.Fermo.Compiler do
       [{module, bytecode}] = Code.compile_string("defmodule #{helpers_module()} do; defmacro __using__(_opts \\\\ %{}) do; end; end")
       base = Mix.Project.compile_path()
       module_path = Path.join(base, "#{module}.beam")
-      File.write!(module_path, bytecode, [:write])
+      @file_impl.write!(module_path, bytecode, [:write])
       Code.ensure_loaded(helpers_module())
     end
   end
