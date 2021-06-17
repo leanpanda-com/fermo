@@ -2,6 +2,8 @@ defmodule Fermo.Compiler do
   import Mix.Fermo.Paths
   import Fermo.Naming
 
+  @file_impl Application.get_env(:fermo, :file_impl, File)
+
   @callback compile(String.t()) :: {:ok}
   def compile(template_project_path) do
     template_source_path = absolute_to_source(template_project_path)
@@ -91,7 +93,7 @@ defmodule Fermo.Compiler do
     Code.compiler_options(ignore_module_conflict: false)
     base = Mix.Project.compile_path()
     module_path = Path.join(base, "#{module}.beam")
-    File.write!(module_path, bytecode, [:write])
+    @file_impl.write!(module_path, bytecode, [:write])
 
     {:ok}
   end
@@ -115,7 +117,7 @@ defmodule Fermo.Compiler do
 
   defp parse_template(template) do
     [frontmatter, body] =
-      File.read(template)
+      @file_impl.read(template)
       |> split_template
 
     {content_fors, offset, body} = extract_content_for_blocks(body)
