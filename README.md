@@ -329,6 +329,18 @@ To run all tests, add the FERMO_RUN_INTEGRATION environment variable:
 $ FERMO_RUN_INTEGRATION=1 mix test
 ```
 
+Coverage:
+
+```sh
+$ mix coverage
+```
+
+HTML coverage:
+
+```sh
+$ mix coveralls.html
+```
+
 # Middleman to Fermo
 
 Fermo was created as an improvement on Middleman, so its defaults
