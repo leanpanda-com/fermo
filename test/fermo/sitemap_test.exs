@@ -51,7 +51,7 @@ defmodule Fermo.SitemapTest do
   end
 
   test "it writes the xml declaration", config do
-    stub(FileMock, :write!, fn _, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" -> :ok end)
+    expect(FileMock, :write!, fn _, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" -> :ok end)
 
     Sitemap.build(config)
   end
