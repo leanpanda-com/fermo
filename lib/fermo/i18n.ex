@@ -1,4 +1,6 @@
 defmodule Fermo.I18n do
+  @callback load() :: {:ok}
+  @callback load(String.t()) :: {:ok}
   def load(path \\ "priv/locales/**/*.yml") do
     files = Path.wildcard(path)
     translations = Enum.reduce(files, %{}, fn (file, translations) ->
