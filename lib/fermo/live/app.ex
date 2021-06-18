@@ -23,11 +23,13 @@ defmodule Fermo.Live.App do
       options: [dispatch: dispatch(), port: port()]
     }
 
+    app_module = Mix.Fermo.Module.module!()
+
     children = app_live_mode_servers() ++ [
       cowboy,
       {Watcher, dirs: ["lib", "priv/source"]},
       {ChangeHandler, []},
-      {Dependencies, []},
+      {Dependencies, [app_module: app_module]},
       {SocketRegistry, []},
       {Webpack.DevServer, []}
     ]
