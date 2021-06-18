@@ -3,6 +3,10 @@ defmodule Fermo.Build do
 
   import Mix.Fermo.Paths, only: [source_path: 0]
 
+  @config Application.get_env(:fermo, :config, Fermo.Config)
+  @ffile Application.get_env(:fermo, :ffile, Fermo.File)
+  @sitemap Application.get_env(:fermo, :sitemap, Fermo.Sitemap)
+
   @callback run(map()) :: {:ok, map()}
   def run(config) do
     # TODO: check if Webpack assets are ready before building HTML
@@ -14,13 +18,11 @@ defmodule Fermo.Build do
     {:ok} = Fermo.Assets.build()
     {:ok} = Fermo.I18n.load()
 
-    File.mkdir_p!(config.build_path)
-
     config =
       config
-      |> Fermo.Config.post_config()
+      |> @config.post_config()
       |> copy_statics()
-      |> Fermo.Sitemap.build()
+      |> @sitemap.build()
 
     Task.async_stream(
       config.pages,
@@ -49,7 +51,7 @@ defmodule Fermo.Build do
     Enum.each(statics, fn (%{source: source, target: target}) ->
       source_pathname = Path.join(source_path(), source)
       target_pathname = Path.join(build_path, target)
-      Fermo.File.copy(source_pathname, target_pathname)
+      @ffile.copy(source_pathname, target_pathname)
     end)
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end
@@ -58,15 +60,15 @@ defmodule Fermo.Build do
     with {:ok, hash} <- cache_key(page),
       {:ok, cache_pathname} <- cached_page_path(hash),
       {:ok} <- is_cached?(cache_pathname) do
-      Fermo.File.copy(cache_pathname, page.pathname)
+      @ffile.copy(cache_pathname, page.pathname)
     else
       {:build_and_cache, cache_pathname} ->
         body = render_page(page)
-        Fermo.File.save(cache_pathname, body)
-        Fermo.File.save(page.pathname, body)
+        @ffile.save(cache_pathname, body)
+        @ffile.save(page.pathname, body)
       {:no_key} ->
         body = render_page(page)
-        Fermo.File.save(page.pathname, body)
+        @ffile.save(page.pathname, body)
     end
   end
 

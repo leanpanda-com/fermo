@@ -25,6 +25,7 @@ defmodule Fermo.Sitemap do
       hide_from_sitemap: true
       ---
   """
+  @callback build(map()) :: map()
   def build(config)
   def build(%{sitemap: sitemap} = config) do
     root = config.base_url
