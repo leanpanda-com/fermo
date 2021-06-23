@@ -1,6 +1,8 @@
 defmodule Fermo.Live.Dependencies do
   use GenServer
 
+  require Logger
+
   @name :fermo_dependencies
 
   @config Application.get_env(:fermo, :config, Fermo.Config)
@@ -12,8 +14,8 @@ defmodule Fermo.Live.Dependencies do
     {:ok, %{config: config, app_module: app_module}}
   end
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, nil, name: @name)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, name: @name)
   end
 
   def reinitialize() do
@@ -80,15 +82,15 @@ defmodule Fermo.Live.Dependencies do
   end
 
   defp load_config(app_module) do
-    IO.write "Requesting #{app_module}.config... "
+    Logger.info "Requesting #{app_module}.config... "
     {:ok, config} = app_module.config()
-    IO.puts "Done!"
-    IO.write "Running post config... "
+    Logger.info "Done!"
+    Logger.info "Running post config... "
     config =
       config
       |> @config.post_config()
       |> set_live_attributes()
-    IO.puts "Done!"
+    Logger.info "Done!"
     config
   end
 
