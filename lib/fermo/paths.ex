@@ -1,5 +1,6 @@
 defmodule Fermo.Paths do
-  def target_to_path(target) do
+  def target_to_path(path, opts \\ [])
+  def target_to_path(target, as_index_html: true) do
     cond do
       target == "index.html" -> "/"
       String.ends_with?(target, "/index.html") ->
@@ -7,6 +8,7 @@ defmodule Fermo.Paths do
       true -> target
     end
   end
+  def target_to_path(path, _opts), do: path
 
   def path_to_target(path, opts \\ [])
   def path_to_target(path, as_index_html: false), do: path
@@ -26,7 +28,7 @@ defmodule Fermo.Paths do
   end
 
   def template_to_target(template, opts) do
-    without_templating_extension = String.replace(template, ~r(\.[a-z]+), "")
+    without_templating_extension = String.replace(template, ~r(\.[a-z]+$), "")
 
     path_to_target(without_templating_extension, opts)
   end

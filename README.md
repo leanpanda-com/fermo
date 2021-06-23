@@ -169,11 +169,8 @@ your project configuration's `build/0` method.
 
 # Templating
 
-## SLIM
+Out-of-the-box, Fermo supports EEx and SLIM templates
 
-Out-of-the-box, Fermo supports SLIM templates for HTML
-
-There are various types of templates:
 * simple templates - any templates found under `priv/source` will be built. The `partials`
   directory is excluded by default - see [excludes](#excludes).
 * page templates - used with [config-defined pages](#config-defined-pages),

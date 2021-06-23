@@ -3,6 +3,7 @@ defmodule Fermo.Compilers do
   @mix_utils Application.get_env(:fermo, :mix_utils, Mix.Utils)
 
   @default_compilers [
+    eex: Fermo.Compilers.EEx,
     slim: @compilers_slim
   ]
 
