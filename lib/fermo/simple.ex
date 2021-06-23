@@ -7,7 +7,9 @@ defmodule Fermo.Simple do
   and adds them to the transformation queue.
   """
 
-  import Mix.Fermo.Paths, only: [source_path: 0]
+  import Fermo.Compilers, only: [templates: 1]
+
+  @source_path "priv/source"
 
   @doc """
   Add a SLIM HTML template to the build
@@ -21,18 +23,21 @@ defmodule Fermo.Simple do
       Regex.compile!(multiple)
     end)
 
-    templates = File.cd!(source_path(), fn ->
-      Path.wildcard("**/*.slim")
-    end)
+    extensions_and_paths =
+      templates(@source_path)
+      |> Enum.map(fn {extension, path} ->
+        {extension, Path.relative_to(path, @source_path)}
+      end)
 
-    Enum.reduce(templates, config, fn (template, config) ->
+    Enum.reduce(extensions_and_paths, config, fn ({extension, template}, config) ->
       skip = Enum.any?(exclude_matchers, fn (exclude) ->
         Regex.match?(exclude, template)
       end)
       if skip do
         config
       else
-        target = Fermo.Paths.template_to_target(template, as_index_html: true)
+        is_html = String.ends_with?(template, ".html.#{extension}")
+        target = Fermo.Paths.template_to_target(template, as_index_html: is_html)
         Fermo.Config.add_page(config, template, target, %{})
       end
     end)

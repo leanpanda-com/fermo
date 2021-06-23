@@ -26,7 +26,8 @@ defmodule Fermo.Paths do
   end
 
   def template_to_target(template, opts) do
-    String.replace(template, ".slim", "")
-    |> path_to_target(opts)
+    without_templating_extension = String.replace(template, ~r(\.[a-z]+), "")
+
+    path_to_target(without_templating_extension, opts)
   end
 end

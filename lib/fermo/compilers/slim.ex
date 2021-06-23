@@ -1,4 +1,4 @@
-defmodule Fermo.Compiler do
+defmodule Fermo.Compilers.Slim do
   import Mix.Fermo.Paths
   import Fermo.Naming
 
