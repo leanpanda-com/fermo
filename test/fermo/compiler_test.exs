@@ -1,3 +1,7 @@
+if !function_exported?(:"Elixir.Helpers", :__info__, 1) do
+  defmodule Helpers do; defmacro __using__(_opts \\ %{}) do; end; end
+end
+
 defmodule Fermo.CompilerTest do
   use ExUnit.Case, async: true
   import Mox
