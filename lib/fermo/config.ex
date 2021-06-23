@@ -21,6 +21,7 @@ defmodule Fermo.Config do
     |> put_in([:stats, :start], Time.utc_now)
   end
 
+  @callback post_config(map()) :: map()
   def post_config(config) do
     pages = Enum.map(
       config.pages,

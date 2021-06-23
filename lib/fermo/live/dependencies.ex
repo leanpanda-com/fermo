@@ -1,16 +1,21 @@
 defmodule Fermo.Live.Dependencies do
   use GenServer
 
+  require Logger
+
   @name :fermo_dependencies
 
-  def init(_opts) do
-    {:ok} = Fermo.I18n.load()
-    config = load_config()
-    {:ok, %{config: config}}
+  @config Application.get_env(:fermo, :config, Fermo.Config)
+  @i18n Application.get_env(:fermo, :i18n, Fermo.I18n)
+
+  def init(app_module: app_module) do
+    {:ok} = @i18n.load()
+    config = load_config(app_module)
+    {:ok, %{config: config, app_module: app_module}}
   end
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, nil, name: @name)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, name: @name)
   end
 
   def reinitialize() do
@@ -33,9 +38,9 @@ defmodule Fermo.Live.Dependencies do
     GenServer.call(@name, {:add_page_dependency, path, type, value})
   end
 
-  def handle_call({:reinitialize}, _from, _state) do
-    config = load_config()
-    {:reply, {:ok}, %{config: config}}
+  def handle_call({:reinitialize}, _from, %{app_module: app_module} = state) do
+    config = load_config(app_module)
+    {:reply, {:ok}, Map.put(state, :config, config)}
   end
 
   def handle_call({:page_from_path, path}, _from, state) do
@@ -76,17 +81,16 @@ defmodule Fermo.Live.Dependencies do
     {:reply, {:ok}, state}
   end
 
-  defp load_config() do
-    module = Mix.Fermo.Module.module!()
-    IO.write "Requesting #{module} config... "
-    {:ok, config} = module.config()
-    IO.puts "Done!"
-    IO.write "Running post config... "
+  defp load_config(app_module) do
+    Logger.info "Requesting #{app_module}.config... "
+    {:ok, config} = app_module.config()
+    Logger.info "Done!"
+    Logger.info "Running post config... "
     config =
       config
-      |> Fermo.Config.post_config()
+      |> @config.post_config()
       |> set_live_attributes()
-    IO.puts "Done!"
+    Logger.info "Done!"
     config
   end
 
