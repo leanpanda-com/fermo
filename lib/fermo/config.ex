@@ -64,13 +64,18 @@ defmodule Fermo.Config do
     params = @template.params_for(module, page)
     path_override = @template.content_for(module, [:path, params, context])
     is_html = String.match?(template, ~r(\.html.\w+))
-    target = Fermo.Paths.path_to_target(supplied_target, as_index_html: is_html)
     # This depends on the default content_for returning "" and not nil
-    path = if path_override == "" do
-      Fermo.Paths.target_to_path(supplied_target, as_index_html: is_html)
+    {target, path} = if path_override == "" do
+      {
+        Fermo.Paths.path_to_target(supplied_target, as_index_html: is_html),
+        Fermo.Paths.target_to_path(supplied_target, as_index_html: is_html)
+      }
     else
-      # Avoid extra whitespace introduced by templating
-      String.replace(path_override, ~r/\n/, "")
+      {
+        Fermo.Paths.path_to_target(path_override, as_index_html: is_html),
+        # Avoid extra whitespace introduced by templating
+        String.replace(path_override, ~r/\n/, "")
+      }
     end
 
     pathname = Path.join(config.build_path, target)

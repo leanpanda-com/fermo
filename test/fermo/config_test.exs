@@ -121,7 +121,17 @@ defmodule Fermo.ConfigTest do
     setup context do
       defaults = Map.get(context, :defaults, %{})
       # This depends on the default content_for returning "" and not nil
-      pages = Map.get(context, :pages, [%{template: "mock_template", target: "target", params: %{foo: :bar}}])
+      pages = Map.get(
+        context,
+        :pages,
+        [
+          %{
+            template: "mock_template.html.slim",
+            target: "target",
+            params: %{foo: :bar}
+          }
+        ]
+      )
       content_for_path = Map.get(context, :content_for_path, "")
 
       stub(Fermo.TemplateMock, :module_for_template, fn _ -> "module" end)
@@ -160,7 +170,7 @@ defmodule Fermo.ConfigTest do
 
       page = hd(config.pages)
 
-      assert page.target == "target"
+      assert page.target == "target/index.html"
     end
 
     @tag content_for_path: "ciao"

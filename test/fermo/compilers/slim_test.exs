@@ -2,7 +2,7 @@ if !function_exported?(:"Elixir.Helpers", :__info__, 1) do
   defmodule Helpers do; defmacro __using__(_opts \\ %{}) do; end; end
 end
 
-defmodule Fermo.CompilerTest do
+defmodule Fermo.Compilers.SlimTest do
   use ExUnit.Case, async: true
   import Mox
 
@@ -10,7 +10,7 @@ defmodule Fermo.CompilerTest do
 
   setup do
     stub(FileMock, :write!, fn _, _, _ -> :ok end)
-    stub(FileMock, :read, fn _ -> {:ok, "foo"} end)
+    stub(FileMock, :read!, fn _ -> "foo" end)
 
     :ok
   end
