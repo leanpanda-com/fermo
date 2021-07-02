@@ -1,6 +1,7 @@
 Mox.defmock(Fermo.BuildMock, for: Fermo.Build)
 Mox.defmock(Fermo.ConfigMock, for: Fermo.Config)
-Mox.defmock(Fermo.CompilerMock, for: Fermo.Compiler)
+Mox.defmock(Fermo.CompilersMock, for: Fermo.Compilers)
+Mox.defmock(Fermo.Compilers.SlimMock, for: Fermo.Compilers.Slim)
 Mox.defmock(Fermo.FileMock, for: Fermo.File)
 Mox.defmock(Fermo.I18nMock, for: Fermo.I18n)
 Mox.defmock(Fermo.LocalizableMock, for: Fermo.Localizable)

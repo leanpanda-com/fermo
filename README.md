@@ -169,14 +169,34 @@ your project configuration's `build/0` method.
 
 # Templating
 
-Currently, Fermo only supports SLIM templates for HTML.
+Out-of-the-box, Fermo supports EEx and SLIM templates
 
-There are various types of templates:
 * simple templates - any templates found under `priv/source` will be built. The `partials`
   directory is excluded by default - see [excludes](#excludes).
 * page templates - used with [config-defined pages](#config-defined-pages),
 * partials - used from other templates,
 * localized - build for each configured locale. See [localization](#localization)
+
+## Frontmatter
+
+At the beginning of any template, you can place 'frontmatter', a block of YAML,
+which supplies the default values related to the template.
+
+Frontmatter can be used to set the layout:
+
+```yaml
+---
+layout: "foo"
+---
+```
+
+or to skip the layout:
+
+```yaml
+---
+layout: null
+---
+```
 
 ## Parameters
 

@@ -3,10 +3,11 @@ defmodule Mix.Fermo.Compiler do
 
   require Logger
 
-  import Mix.Fermo.Paths
+  import Mix.Fermo.Paths, only: [full_source_path: 0]
 
+  # Implementations for testing
+  @compilers Application.get_env(:fermo, :compilers, Fermo.Compilers)
   @file_impl Application.get_env(:fermo, :file_impl, File)
-  @compiler Application.get_env(:fermo, :compiler, Fermo.Compiler)
   @mix_compiler_manifest Application.get_env(:fermo, :mix_compiler_manifest, Mix.Fermo.Compiler.Manifest)
   @mix_utils Application.get_env(:fermo, :mix_utils, Mix.Utils)
 
@@ -15,11 +16,11 @@ defmodule Mix.Fermo.Compiler do
     compilation_timestamp = compilation_timestamp()
     ensure_helpers_module()
 
-    all_sources = all_sources()
+    all_sources = @compilers.templates(full_source_path())
     timestamp = @mix_compiler_manifest.timestamp()
     helpers_changed = helpers_changed?(timestamp)
     changed = if helpers_changed do
-      MapSet.to_list(all_sources)
+      all_sources
     else
       changed_since(all_sources, timestamp)
     end
@@ -27,9 +28,11 @@ defmodule Mix.Fermo.Compiler do
     count = length(changed)
     if count > 0 do
       Logger.info "Fermo.Compiler compiling #{count} file(s)... "
-      Enum.each(changed, fn template_project_path ->
-        Logger.info "Compiling #{template_project_path}"
-        @compiler.compile(template_project_path)
+      compilers = @compilers.compilers()
+      Enum.each(changed, fn {type, template_project_path} ->
+        Logger.info "Compiling #{template_project_path} with #{type} compiler"
+        compiler = compilers[type]
+        compiler.compile(template_project_path)
       end)
       Logger.info "Done!"
     end
@@ -39,13 +42,10 @@ defmodule Mix.Fermo.Compiler do
     :ok
   end
 
-  defp changed_since(paths, timestamp) do
-    Enum.filter(paths, &(@mix_utils.last_modified(&1) > timestamp))
-  end
-
-  defp all_sources do
-    @mix_utils.extract_files([full_source_path()], [:slim])
-    |> MapSet.new()
+  defp changed_since(types_and_paths, timestamp) do
+    Enum.filter(types_and_paths, fn {_type, path} ->
+      @mix_utils.last_modified(path) > timestamp
+    end)
   end
 
   def compilation_timestamp, do: System.os_time(:second)

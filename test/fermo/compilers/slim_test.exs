@@ -23,6 +23,6 @@ defmodule Fermo.CompilerTest do
       )
     end)
 
-    Fermo.Compiler.compile("path/to/template")
+    Fermo.Compilers.Slim.compile("path/to/template")
   end
 end
