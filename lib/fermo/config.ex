@@ -38,50 +38,50 @@ defmodule Fermo.Config do
     |> put_in([:stats, :post_config_completed], Time.utc_now)
   end
 
-  def add_page(config, template, target, params \\ %{}) do
+  def add_page(config, template, filename, params \\ %{}) do
     pages = Map.get(config, :pages, [])
-    page = page_from(template, target, params)
+    page = page_from(template, filename, params)
     put_in(config, [:pages], pages ++ [page])
   end
 
-  def add_static(config, source, target) do
+  def add_static(config, source, filename) do
     statics = Map.get(config, :statics)
-    put_in(config, [:statics], statics ++ [%{source: source, target: target}])
+    put_in(config, [:statics], statics ++ [%{source: source, filename: filename}])
   end
 
-  def page_from(template, target, params) do
+  def page_from(template, filename, params) do
     %{
       template: template,
-      target: target,
+      filename: filename,
       params: params
     }
   end
 
   defp set_path(page, config) do
-    %{template: template, target: supplied_target} = page
+    %{template: template, filename: supplied_filename} = page
     module = @template.module_for_template(template)
     context = @template.build_context(module, template, page)
     params = @template.params_for(module, page)
     path_override = @template.content_for(module, [:path, params, context])
     is_html = String.match?(template, ~r(\.html.\w+))
     # This depends on the default content_for returning "" and not nil
-    {target, path} = if path_override == "" do
+    {filename, path} = if path_override == "" do
       {
-        Fermo.Paths.path_to_target(supplied_target, as_index_html: is_html),
-        Fermo.Paths.target_to_path(supplied_target, as_index_html: is_html)
+        Fermo.Paths.path_to_filename(supplied_filename, as_index_html: is_html),
+        Fermo.Paths.filename_to_path(supplied_filename, as_index_html: is_html)
       }
     else
       {
-        Fermo.Paths.path_to_target(path_override, as_index_html: is_html),
+        Fermo.Paths.path_to_filename(path_override, as_index_html: is_html),
         # Avoid extra whitespace introduced by templating
         String.replace(path_override, ~r/\n/, "")
       }
     end
 
-    pathname = Path.join(config.build_path, target)
+    pathname = Path.join(config.build_path, filename)
 
     page
-    |> put_in([:target], target)
+    |> put_in([:filename], filename)
     |> put_in([:path], path)
     |> put_in([:pathname], pathname)
   end

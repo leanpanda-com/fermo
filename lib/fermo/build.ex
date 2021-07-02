@@ -48,10 +48,10 @@ defmodule Fermo.Build do
   defp copy_statics(config) do
     statics = Map.get(config, :statics, [])
     build_path = config.build_path
-    Enum.each(statics, fn (%{source: source, target: target}) ->
+    Enum.each(statics, fn (%{source: source, filename: filename}) ->
       source_pathname = Path.join(source_path(), source)
-      target_pathname = Path.join(build_path, target)
-      @ffile.copy(source_pathname, target_pathname)
+      destination_pathname = Path.join(build_path, filename)
+      @ffile.copy(source_pathname, destination_pathname)
     end)
     put_in(config, [:stats, :copy_statics_completed], Time.utc_now)
   end

@@ -14,24 +14,24 @@ defmodule Fermo.ConfigTest do
     end
 
     test "it adds a page", context do
-      config = Config.add_page(context.config, "template", "target", "params")
+      config = Config.add_page(context.config, "template", "output.html", "params")
 
       page = hd(config.pages)
-      assert page == %{template: "template", target: "target", params: "params"}
+      assert page == %{template: "template", filename: "output.html", params: "params"}
     end
   end
 
   describe "add_static/3" do
     test "it adds a static page" do
-      config = Config.add_static(%{statics: []}, "source", "target")
+      config = Config.add_static(%{statics: []}, "source", "output.txt")
 
-      assert hd(config.statics) == %{source: "source", target: "target"}
+      assert hd(config.statics) == %{source: "source", filename: "output.txt"}
     end
   end
 
   describe "page_from/3" do
     test "it returns the page" do
-      assert Config.page_from("a", "b", "c") == %{template: "a", target: "b", params: "c"}
+      assert Config.page_from("a", "b", "c") == %{template: "a", filename: "b", params: "c"}
     end
   end
 
@@ -127,7 +127,7 @@ defmodule Fermo.ConfigTest do
         [
           %{
             template: "mock_template.html.slim",
-            target: "target",
+            filename: "output.html",
             params: %{foo: :bar}
           }
         ]
@@ -162,15 +162,15 @@ defmodule Fermo.ConfigTest do
 
       page = hd(config.pages)
 
-      assert page.path == "target"
+      assert page.path == "output"
     end
 
-    test "it sets the page target", context do
+    test "it sets page output filenames", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.target == "target/index.html"
+      assert page.filename == "output/index.html"
     end
 
     @tag content_for_path: "ciao"
@@ -183,12 +183,12 @@ defmodule Fermo.ConfigTest do
     end
 
     @tag content_for_path: "ciao"
-    test "when the template overrides the path, it uses that path for the target", context do
+    test "when the template overrides the path, it bases the output filename on the override", context do
       config = Config.post_config(context.config)
 
       page = hd(config.pages)
 
-      assert page.target == "ciao/index.html"
+      assert page.filename == "ciao/index.html"
     end
 
     @tag defaults: %{baz: :qux}
@@ -247,7 +247,7 @@ defmodule Fermo.ConfigTest do
 
     @tag config_layout: "from_config"
     @tag defaults: %{layout: "from_frontmatter"}
-    @tag pages: [%{template: "mock_template", target: "target", params: %{layout: "from_page"}}]
+    @tag pages: [%{template: "mock_template", filename: "filename", params: %{layout: "from_page"}}]
     test "the page layout takes precedence over the frontmatter and config layouts", context do
       config = Config.post_config(context.config)
 

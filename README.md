@@ -218,7 +218,10 @@ Top level pages are called with the following parameters:
 Information about the top-level page.
 
 * `:template` - the template path and name relative to the source root,
-* `:target` - the path of the generated file,
+* `:filename` - the path of the generated file
+  relative to the `build` directory.
+  Note that this filename gets standardized. E.g., if you supply
+  "foo.html", that will get corrected to "foo/index.html",
 * `:path` - the online path of the page,
 * `:params` - the parameters passed to the template.
 

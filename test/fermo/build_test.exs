@@ -22,7 +22,7 @@ defmodule Fermo.BuildTest do
   test "it builds pages" do
     page = %{
       template: "template",
-      target: "target",
+      filename: "filename",
       params: %{
         module: Fermo.BuildTest.FakeTemplate,
         layout: nil

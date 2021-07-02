@@ -41,7 +41,7 @@ defmodule Fermo.SitemapTest do
       sitemap: %{},
       pages: [
         %{
-          target: "/foo/bar/1/index.html",
+          filename: "/foo/bar/1/index.html",
           template: "fake_template",
           path: "/foo/bar/1"
         }

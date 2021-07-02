@@ -6,10 +6,10 @@ defmodule FermoTest do
 
   describe "page/4" do
     test "it adds the page" do
-      config = Fermo.page(%{pages: []}, "template", "target", "params")
+      config = Fermo.page(%{pages: []}, "template", "output.html", "params")
 
       page = hd(config.pages)
-      assert page == %{params: "params", target: "target", template: "template"}
+      assert page == %{params: "params", filename: "output.html", template: "template"}
     end
   end
 
