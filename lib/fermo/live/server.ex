@@ -1,4 +1,6 @@
 defmodule Fermo.Live.Server do
+  require Logger
+
   import Plug.Conn
   import Mix.Fermo.Paths, only: [app_path: 0]
 
@@ -23,13 +25,16 @@ defmodule Fermo.Live.Server do
     respond_403(conn)
   end
   defp handle_request_path({:ok, request_path}, conn) do
+    Logger.debug "[Fermo.Live.Server] GET #{request_path}"
     if is_static?(request_path) do
       serve_static(request_path, conn)
     else
       case find_page(request_path) do
         {:ok, page} ->
+          Logger.debug "[Fermo.Live.Server] Serving page #{request_path}"
           serve_page(page, conn)
         _ ->
+          Logger.debug "[Fermo.Live.Server] Page #{request_path} not found"
           respond_404(conn)
       end
     end
