@@ -112,7 +112,7 @@ defmodule Fermo.Live.Server do
         if expanded == "/" do
           {:ok, "/"}
         else
-          {:ok, expanded <> "/"}
+          {:ok, URI.decode(expanded) <> "/"}
         end
     end
   end
