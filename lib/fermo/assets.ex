@@ -28,7 +28,8 @@ defmodule Fermo.Assets do
   end
 
   def live_asset_path(filename) do
-    "//localhost:#{@webpack_dev_server_port}/#{filename}"
+    manifest_path = Webpack.Assets.path!(filename)
+    "//localhost:#{@webpack_dev_server_port}/#{manifest_path}"
   end
 
   # TODO: make this a context aware macro
@@ -90,7 +91,7 @@ defmodule Fermo.Assets do
   end
 
   def live_image_path(filename) do
-    "//localhost:#{@webpack_dev_server_port}/images/#{filename}"
+    live_asset_path("images/#{filename}")
   end
 
   defmacro javascript_path(name) do
@@ -124,7 +125,7 @@ defmodule Fermo.Assets do
   end
 
   def live_javascript_path(name) do
-    "//localhost:#{@webpack_dev_server_port}/javascripts/#{name}.js"
+    live_asset_path("/#{name}.js")
   end
 
   defmacro stylesheet_link_tag(name) do
@@ -147,6 +148,6 @@ defmodule Fermo.Assets do
   end
 
   def live_stylesheet_path(name) do
-    "//localhost:#{@webpack_dev_server_port}/stylesheets/#{name}.css"
+    live_asset_path("/#{name}.css")
   end
 end
