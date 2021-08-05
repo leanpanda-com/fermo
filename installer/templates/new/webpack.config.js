@@ -4,15 +4,15 @@ const webpack = require('webpack')
 
 const mode = (process.env.NODE_ENV === 'development') ? 'development' : 'production'
 
-let assetNaming = null
+let assetModuleFilename = null
 let cssFilenameTemplate = null
 let jsFilenameTemplate = null
 if (mode === 'production') {
-  assetNaming = '[path][name]-[chunkhash:6].[ext]'
-  cssFilenameTemplate = 'stylesheets/[name]-[chunkhash:6].css'
-  jsFilenameTemplate = 'javascripts/[name]-[chunkhash:6].js'
+  assetModuleFilename = '[path][name]-[fullhash][ext]'
+  cssFilenameTemplate = 'stylesheets/[name]-[fullhash].css'
+  jsFilenameTemplate = 'javascripts/[name]-[fullhash].js'
 } else {
-  assetNaming = '[path][name].[ext]'
+  assetModuleFilename = '[path][name][ext]'
   cssFilenameTemplate = 'stylesheets/[name].css'
   jsFilenameTemplate = 'javascripts/[name].js'
 }
@@ -32,6 +32,7 @@ module.exports = {
   output: {
     path: __dirname + '/build',
     publicPath: '/', // prepend '/' to image paths resolved from 'url()' in SASS
+    assetModuleFilename,
     filename: jsFilenameTemplate
   },
   mode,
@@ -57,16 +58,7 @@ module.exports = {
       },
       {
         test: /\.(gif|ico|jpg|png|svg|eot|ttf|woff|woff2)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              name: assetNaming,
-              esModule: false,
-              sourceMap: false
-            }
-          }
-        ]
+        type: 'asset/resource'
       },
       {
         test: /.*\.sass$/,
