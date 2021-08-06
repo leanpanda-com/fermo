@@ -38,7 +38,7 @@ defmodule Fermo.I18n do
   """
   @callback optionally_build_path_map(map()) :: map()
   def optionally_build_path_map(%{i18n: nil} = config), do: config
-  def optionally_build_path_map(%{path_map: true, i18n: _i18n} = config) do
+  def optionally_build_path_map(%{localized_paths: true, i18n: _i18n} = config) do
     pages_with_locale_and_id = Enum.filter(
       config.pages,
       fn %{params: params} ->
@@ -81,6 +81,15 @@ defmodule Fermo.I18n do
     config
     |> put_in([:pages], pages)
     |> put_in([:stats, :optionally_build_path_map_completed], Time.utc_now)
+  end
+  def optionally_build_path_map(%{path_map: true} = config) do
+    IO.warn """
+    `config.path_map` is deprecated.
+
+    Set `config.localized_paths: true` in order to get a per-page Map
+    of localized pages.
+    """
+    optionally_build_path_map(Map.put(config, :localized_paths, true))
   end
   def optionally_build_path_map(config), do: config
 
