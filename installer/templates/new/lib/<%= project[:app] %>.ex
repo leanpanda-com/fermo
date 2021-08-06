@@ -6,6 +6,7 @@ defmodule <%= @project[:module] %> do
   use Fermo, %{
     base_url: Application.fetch_env!(:fermo, :base_url),
     i18n: [:en, :it],
+    localized_paths: true,
     exclude: ["templates/*", "layouts/*", "javascripts/*", "stylesheets/*"]
   }
   import Fermo, only: [page: 4]
