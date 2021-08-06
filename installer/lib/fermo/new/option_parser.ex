@@ -2,7 +2,7 @@ defmodule Fermo.New.OptionParser do
   @strict [locales: :string]
 
   @callback run([String.t()]) :: {:ok, map()} | {:error, atom(), String.t()}
-  @doc ~S"""
+  @doc ~S|
   Parse command-line arguments
 
     iex> Fermo.New.OptionParser.run(["/base/path"])
@@ -22,7 +22,7 @@ defmodule Fermo.New.OptionParser do
 
     iex> Fermo.New.OptionParser.run(["--locales", "%%", "/base/path"])
     {:error, :bad_args, "Malformed locales parameter"}
-  """
+  |
   def run(argv) do
     case OptionParser.parse(argv, strict: @strict) do
       {_opts, [], []} ->
